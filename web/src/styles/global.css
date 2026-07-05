@@ -1,0 +1,87 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+.marquee {
+  font-family: Impact, "Arial Narrow", sans-serif;
+  font-stretch: condensed;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mono {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+h2.section-title {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.section-sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .big {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  background: var(--seria);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn.danger {
+  background: var(--stub);
+}
+
+.btn.ghost {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+select,
+input[type="text"] {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+@media (max-width: 1023px) {
+  h2.section-title {
+    font-size: 22px;
+  }
+
+  select,
+  input[type="text"] {
+    width: 100%;
+    font-size: 16px;
+  }
+}

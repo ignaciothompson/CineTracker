@@ -1,0 +1,271 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 760px;
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-head img {
+  width: 130px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+}
+
+.modal-head .info {
+  flex: 1;
+}
+
+.modal-head h2 {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.modal-head .overview {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 10px;
+  max-height: 90px;
+  overflow-y: auto;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.field-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.season-block {
+  margin-top: 16px;
+}
+
+.season-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.season-title {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.season-action {
+  padding: 5px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.list-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.list-add-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-add-row .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.list-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.list-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.list-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.list-tag-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+
+.list-tag-remove:hover {
+  color: var(--text);
+}
+
+.ep-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ep-chip {
+  width: 34px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.ep-chip.watched {
+  background: var(--progress);
+  color: #0E1013;
+  border-color: var(--progress);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.close-x {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  background: none;
+  border: none;
+}
+
+@media (max-width: 1023px) {
+  .overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal {
+    border-radius: 0;
+    max-width: none;
+    min-height: 100vh;
+  }
+
+  .modal-head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 16px;
+    gap: 14px;
+  }
+
+  .modal-head img {
+    width: 160px;
+    max-width: 60vw;
+  }
+
+  .modal-head .overview {
+    max-height: none;
+    text-align: left;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .field-row {
+    gap: 12px;
+  }
+
+  .field {
+    flex: 1 1 calc(50% - 12px);
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .close-x {
+    top: 12px;
+    right: 12px;
+  }
+}

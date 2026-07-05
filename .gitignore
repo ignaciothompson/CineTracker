@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+
+web/node_modules/
+web/dist/
+
+pb_data/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

@@ -1,0 +1,23 @@
+services:
+  pocketbase:
+    build: .
+    container_name: cinetracker-pb
+    restart: unless-stopped
+    environment:
+      # La clave para /api/recommend. Conseguila en console.anthropic.com
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    ports:
+      - "8091:8090"
+    volumes:
+      # Solo los datos persisten en un volumen; el código (hooks/migraciones)
+      # va horneado en la imagen, así Dokploy no depende de que un volumen
+      # vacío se llene solo.
+      - pb_data:/pb/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pb_data:

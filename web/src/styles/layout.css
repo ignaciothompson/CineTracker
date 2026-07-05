@@ -1,0 +1,103 @@
+.app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-header {
+  flex-shrink: 0;
+}
+
+.main-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.view-header .section-sub {
+  margin-bottom: 0;
+}
+
+@media (min-width: 1024px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  main {
+    height: 100vh;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .main-header {
+    padding: 18px 24px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .view-header {
+    padding-bottom: 14px;
+  }
+
+  .main-scroll {
+    overflow-y: auto;
+    padding: 16px 24px 24px;
+    overscroll-behavior: contain;
+  }
+
+  .main-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .main-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .main-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 1023px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  main {
+    padding: 16px;
+    max-width: none;
+    height: auto;
+    overflow: visible;
+  }
+
+  .main-header {
+    padding: 0;
+    border: none;
+  }
+
+  .main-scroll {
+    overflow: visible;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 12px;
+  }
+}

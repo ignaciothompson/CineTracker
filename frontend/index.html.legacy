@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CINETRACKER</title>
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.25.1/dist/pocketbase.umd.js"></script>
+<style>
+  :root{
+    --bg:#0E1013;
+    --surface:#171A1E;
+    --surface-raised:#1F2329;
+    --border:#2A2F36;
+    --text:#ECE8E1;
+    --text-muted:#8B9099;
+    --seria:#3E7C8C;
+    --comedia:#D98E4A;
+    --stub:#C1443C;
+    --progress:#6FA787;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; min-height:100vh; }
+  .marquee{ font-family:Impact,"Arial Narrow",sans-serif; font-stretch:condensed; text-transform:uppercase; letter-spacing:0.06em; }
+  .mono{ font-family:ui-monospace,"SF Mono",Consolas,monospace; }
+
+  .sidebar{ width:230px; min-width:230px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 0; height:100vh; flex-shrink:0; overflow-y:auto; }
+  .brand{ padding:0 20px 24px 20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+  .brand h1{ font-size:22px; letter-spacing:0.08em; }
+  .brand .film-strip{ display:flex; gap:3px; margin-top:8px; }
+  .brand .film-strip span{ width:10px; height:4px; background:var(--seria); border-radius:1px; }
+  .brand .film-strip span:nth-child(3n){ background:var(--comedia); }
+
+  nav{ display:flex; flex-direction:column; gap:2px; padding:0 12px; }
+  .nav-item{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:6px; cursor:pointer; color:var(--text-muted); font-size:14px; }
+  .nav-item:hover{ background:var(--surface-raised); color:var(--text); }
+  .nav-item.active{ background:var(--surface-raised); color:var(--text); border-left:3px solid var(--seria); padding-left:9px; }
+  .nav-item .count{ font-family:ui-monospace,monospace; font-size:12px; color:var(--text-muted); }
+
+  .sidebar-footer{ margin-top:auto; padding:0 20px; display:flex; flex-direction:column; gap:8px; }
+  .ghost-btn{ background:none; border:1px solid var(--border); color:var(--text-muted); font-size:12px; padding:8px 10px; border-radius:6px; cursor:pointer; text-align:left; }
+  .ghost-btn:hover{ border-color:var(--seria); color:var(--text); }
+
+  main{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:100vh; }
+  .main-header{ flex-shrink:0; }
+  .main-scroll{ flex:1; min-height:0; }
+  .view-header .section-sub{ margin-bottom:0; }
+  .topbar{ display:flex; gap:16px; align-items:center; margin-bottom:12px; }
+  .search-wrap{ position:relative; flex:1; min-width:0; }
+  #search-input{ width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:8px; font-size:14px; }
+  #search-input:focus{ outline:none; border-color:var(--seria); }
+  .search-results{ position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--surface-raised); border:1px solid var(--border); border-radius:8px; max-height:420px; overflow-y:auto; z-index:50; display:none; }
+  .search-results.show{ display:block; }
+  .sr-item{ display:flex; gap:12px; padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--border); }
+  .sr-item:last-child{ border-bottom:none; }
+  .sr-item:hover{ background:var(--bg); }
+  .sr-item img{ width:40px; height:60px; object-fit:cover; border-radius:3px; background:var(--border); }
+  .sr-info{ display:flex; flex-direction:column; justify-content:center; }
+  .sr-info .t{ font-size:14px; }
+  .sr-info .y{ font-size:12px; color:var(--text-muted); }
+
+  .filters{ display:flex; gap:8px; flex-shrink:0; margin-left:auto; }
+  .chip{ background:var(--surface); border:1px solid var(--border); color:var(--text-muted); font-size:12px; padding:8px 14px; border-radius:20px; cursor:pointer; }
+  .chip.active{ color:var(--bg); background:var(--text); border-color:var(--text); }
+
+  h2.section-title{ font-size:24px; margin-bottom:4px; }
+  .section-sub{ color:var(--text-muted); font-size:13px; margin-bottom:16px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(155px, 1fr)); gap:16px; }
+  .ticket{ background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; position:relative; transition:transform .12s, border-color .12s; }
+  .ticket:hover{ transform:translateY(-3px); border-color:var(--seria); }
+  .ticket .poster{ width:100%; aspect-ratio:2/3; object-fit:cover; background:var(--surface-raised); display:block; }
+  .ticket .cat-tag{ position:absolute; top:8px; left:8px; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; padding:3px 7px; border-radius:3px; font-weight:600; }
+  .cat-tag.Seria{ background:var(--seria); color:#fff; }
+  .cat-tag.Comedia{ background:var(--comedia); color:#1a1a1a; }
+  .cat-tag.Pelicula{ background:var(--stub); color:#fff; }
+  .ticket .body{ padding:10px 12px 12px 12px; background-image:radial-gradient(circle, var(--bg) 3px, transparent 3.5px); background-size:14px 14px; background-position:top -7px left 0; background-repeat:repeat-x; }
+  .ticket .title{ font-size:13.5px; line-height:1.3; margin-bottom:6px; min-height:34px; }
+  .filmstrip{ display:flex; gap:2px; margin-top:6px; flex-wrap:wrap; }
+  .filmstrip .frame{ width:8px; height:8px; border-radius:1px; background:var(--border); }
+  .filmstrip .frame.on{ background:var(--progress); }
+  .ticket .meta-row{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:11px; color:var(--text-muted); }
+  .rating-badge{ background:var(--stub); color:#fff; font-size:11px; padding:1px 6px; border-radius:3px; font-family:ui-monospace,monospace; }
+
+  .empty-state{ text-align:center; padding:80px 20px; color:var(--text-muted); }
+  .empty-state .big{ font-size:40px; margin-bottom:10px; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto; z-index:100; }
+  .overlay.show{ display:flex; }
+  .modal{ background:var(--surface); border:1px solid var(--border); border-radius:10px; width:100%; max-width:760px; overflow:hidden; }
+  .modal-head{ display:flex; gap:20px; padding:24px; border-bottom:1px solid var(--border); }
+  .modal-head img{ width:130px; border-radius:6px; background:var(--surface-raised); }
+  .modal-head .info{ flex:1; }
+  .modal-head h2{ font-size:22px; margin-bottom:6px; }
+  .modal-head .overview{ font-size:13px; color:var(--text-muted); line-height:1.5; margin-top:10px; max-height:90px; overflow-y:auto; }
+  .modal-body{ padding:20px 24px; }
+  .field-row{ display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  select, input[type=text]{ background:var(--surface-raised); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font-size:13px; }
+  .season-block{ margin-top:16px; }
+  .season-title{ font-size:13px; color:var(--text-muted); margin-bottom:8px; }
+  .ep-grid{ display:flex; flex-wrap:wrap; gap:6px; }
+  .ep-chip{ width:34px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:4px; background:var(--surface-raised); border:1px solid var(--border); font-size:11px; font-family:ui-monospace,monospace; cursor:pointer; color:var(--text-muted); }
+  .ep-chip.watched{ background:var(--progress); color:#0E1013; border-color:var(--progress); }
+  .modal-footer{ display:flex; justify-content:space-between; padding:16px 24px; border-top:1px solid var(--border); }
+  .btn{ background:var(--seria); color:#fff; border:none; padding:9px 16px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .btn.danger{ background:var(--stub); }
+  .btn.ghost{ background:none; border:1px solid var(--border); color:var(--text-muted); }
+  .close-x{ position:absolute; top:16px; right:20px; cursor:pointer; color:var(--text-muted); font-size:20px; background:none; border:none; }
+
+  .setup-box{ max-width:460px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:24px; }
+  .setup-box h3{ margin-bottom:8px; font-size:15px; }
+  .setup-box p{ color:var(--text-muted); font-size:12.5px; line-height:1.5; margin-bottom:14px; }
+  .setup-box input{ width:100%; margin-bottom:10px; }
+  .setup-box a{ color:var(--seria); }
+
+  .stats-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:18px; }
+  .stat-card .num{ font-size:32px; font-family:ui-monospace,monospace; }
+  .stat-card .lbl{ font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:4px; }
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px; }
+  .bar-row .lbl{ width:90px; color:var(--text-muted); }
+  .bar-track{ flex:1; height:10px; background:var(--surface-raised); border-radius:5px; overflow:hidden; }
+  .bar-fill{ height:100%; }
+  .bar-row .val{ width:36px; text-align:right; font-family:ui-monospace,monospace; font-size:12px; }
+
+  .rec-box{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:22px; white-space:pre-wrap; line-height:1.6; font-size:14px; max-width:760px; }
+  .list-card{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:14px; }
+  .list-card h3{ margin-bottom:6px; }
+  .list-card .items{ color:var(--text-muted); font-size:13px; line-height:1.6; }
+
+  #app{ display:flex; width:100%; min-height:100vh; }
+
+  @media (min-width:1024px){
+    html, body{ height:100%; overflow:hidden; }
+    #app{ height:100vh; overflow:hidden; }
+    main{ height:100vh; overflow:hidden; padding:0; }
+    .main-header{
+      padding:18px 24px 0;
+      border-bottom:1px solid var(--border);
+      background:var(--bg);
+    }
+    .view-header{ padding-bottom:14px; }
+    .main-scroll{
+      overflow-y:auto;
+      padding:16px 24px 24px;
+      overscroll-behavior:contain;
+    }
+    .main-scroll::-webkit-scrollbar{ width:8px; }
+    .main-scroll::-webkit-scrollbar-track{ background:transparent; }
+    .main-scroll::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+    .rec-box{ max-width:none; }
+    .stats-grid{ grid-template-columns:repeat(4, 1fr); }
+  }
+
+  @media (min-width:1400px){
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:18px; }
+  }
+
+  @media (min-width:1800px){
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); }
+  }
+
+  .mobile-header{ display:none; align-items:center; gap:12px; margin-bottom:16px; }
+  .menu-btn{
+    display:none; align-items:center; justify-content:center;
+    width:40px; height:40px; flex-shrink:0;
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-size:18px; cursor:pointer;
+  }
+  .menu-btn:hover{ border-color:var(--seria); }
+  .mobile-title{ font-size:18px; letter-spacing:0.08em; }
+  .sidebar-backdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    z-index:150; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .sidebar-backdrop.show{ opacity:1; pointer-events:auto; }
+
+  @media (max-width:1023px){
+    body{ overflow-x:hidden; }
+    .menu-btn{ display:flex; }
+    .mobile-header{ display:flex; }
+    .sidebar-backdrop{ display:block; }
+    .sidebar{
+      position:fixed; left:0; top:0; z-index:160;
+      width:min(280px, 85vw); min-width:0;
+      transform:translateX(-100%); transition:transform .25s ease;
+      box-shadow:4px 0 24px rgba(0,0,0,0.35);
+    }
+    .sidebar.open{ transform:translateX(0); }
+    main{ padding:16px; max-width:none; height:auto; overflow:visible; }
+    .main-header{ padding:0; border:none; }
+    .main-scroll{ overflow:visible; padding:0; }
+    .topbar{ flex-direction:column; align-items:stretch; gap:12px; margin-bottom:20px; }
+    .search-wrap{ max-width:none; }
+    .filters{
+      overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .filters::-webkit-scrollbar{ display:none; }
+    .chip{ flex-shrink:0; }
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; }
+    h2.section-title{ font-size:22px; }
+    .stats-grid{ grid-template-columns:repeat(2, 1fr); gap:12px; }
+    .stat-card .num{ font-size:26px; }
+    .stat-card{ padding:14px; }
+    .bar-row .lbl{ width:72px; font-size:12px; }
+    .overlay{ padding:0; align-items:stretch; }
+    .modal{ border-radius:0; max-width:none; min-height:100vh; }
+    .modal-head{ flex-direction:column; align-items:center; text-align:center; padding:20px 16px; gap:14px; }
+    .modal-head img{ width:160px; max-width:60vw; }
+    .modal-head .overview{ max-height:none; text-align:left; }
+    .modal-body{ padding:16px; }
+    .modal-footer{ flex-direction:column-reverse; gap:10px; padding:16px; }
+    .modal-footer .btn{ width:100%; text-align:center; }
+    .field-row{ gap:12px; }
+    .field{ flex:1 1 calc(50% - 12px); min-width:120px; }
+    select, input[type=text]{ width:100%; font-size:16px; }
+    .rec-box{ max-width:none; padding:16px; font-size:13px; }
+    .list-card{ padding:14px; }
+  }
+
+  @media (max-width:480px){
+    main{ padding:12px; }
+    .grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+    .ticket .title{ font-size:12.5px; min-height:32px; }
+    .stats-grid{ grid-template-columns:1fr 1fr; }
+    .stat-card .num{ font-size:22px; }
+    #search-input{ font-size:16px; padding:10px 12px; }
+    .nav-item{ font-size:13px; padding:12px; }
+    .close-x{ top:12px; right:12px; }
+  }
+
+  @media (min-width:1024px){
+    .sidebar-backdrop{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app" style="display:none; width:100%;">
+  <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <h1 class="marquee">Cinetracker</h1>
+      <div class="film-strip"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <nav>
+      <div class="nav-item active" data-view="viendo" onclick="setView('viendo')"><span>Viendo</span><span class="count" id="c-viendo">0</span></div>
+      <div class="nav-item" data-view="pendientes" onclick="setView('pendientes')"><span>Pendientes</span><span class="count" id="c-pendientes">0</span></div>
+      <div class="nav-item" data-view="visto" onclick="setView('visto')"><span>Visto</span><span class="count" id="c-visto">0</span></div>
+      <div class="nav-item" data-view="todo" onclick="setView('todo')"><span>Toda la biblioteca</span><span class="count" id="c-todo">0</span></div>
+      <div class="nav-item" data-view="listas" onclick="setView('listas')"><span>Listas</span><span></span></div>
+      <div class="nav-item" data-view="stats" onclick="setView('stats')"><span>Estadísticas</span><span></span></div>
+      <div class="nav-item" data-view="recomendaciones" onclick="setView('recomendaciones')"><span>Recomendaciones IA</span><span></span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="ghost-btn" onclick="changeApiKey()">TMDB API key</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="main-header">
+      <div class="mobile-header">
+        <button class="menu-btn" type="button" aria-label="Abrir menú" onclick="toggleSidebar()">☰</button>
+        <span class="mobile-title marquee">Cinetracker</span>
+      </div>
+      <div class="topbar">
+        <div class="search-wrap">
+          <input id="search-input" type="text" placeholder="Buscar en TMDB para agregar una serie o película..." autocomplete="off">
+          <div id="search-results" class="search-results"></div>
+        </div>
+        <div class="filters" id="cat-filters">
+          <div class="chip active" data-cat="all" onclick="setCatFilter('all')">Todo</div>
+          <div class="chip" data-cat="Seria" onclick="setCatFilter('Seria')">Seria</div>
+          <div class="chip" data-cat="Comedia" onclick="setCatFilter('Comedia')">Comedia</div>
+          <div class="chip" data-cat="Pelicula" onclick="setCatFilter('Pelicula')">Películas</div>
+        </div>
+      </div>
+      <div class="view-header" id="view-header"></div>
+    </div>
+    <div class="main-scroll" id="content-scroll">
+      <div id="content"></div>
+    </div>
+  </main>
+</div>
+
+<div id="detail-overlay" class="overlay"><div class="modal" id="detail-modal"></div></div>
+
+<script>
+/* ---------------- PB CLIENT ---------------- */
+const pb = new PocketBase(window.location.origin);
+
+let seriesLib = [];
+let moviesLib = [];
+let lists = [];
+let tmdbKey = null;
+let settingsRecordId = null;
+let currentView = 'viendo';
+let currentCatFilter = 'all';
+let searchTimeout = null;
+
+const IMG = (path, size='w342') => path ? `https://image.tmdb.org/t/p/${size}${path}` : '';
+
+/* ---------------- INIT ---------------- */
+async function init(){
+  document.getElementById('app').style.display = 'flex';
+  await Promise.all([loadLibrary(), loadSettings()]);
+  renderAll();
+}
+
+async function loadSettings(){
+  try{
+    const recs = await pb.collection('settings').getFullList({ requestKey: null });
+    if(recs.length){
+      settingsRecordId = recs[0].id;
+      tmdbKey = recs[0].tmdb_api_key || null;
+    }
+  }catch(e){ console.warn('settings load failed', e); }
+}
+
+async function loadLibrary(){
+  try{
+    seriesLib = await pb.collection('series').getFullList({ sort: '-id', requestKey: null });
+  }catch(e){ seriesLib = []; }
+  try{
+    moviesLib = await pb.collection('movies').getFullList({ sort: '-id', requestKey: null });
+  }catch(e){ moviesLib = []; }
+  try{
+    lists = await pb.collection('lists').getFullList({ sort: '-id', requestKey: null });
+  }catch(e){ lists = []; }
+}
+
+/* ---------------- TMDB KEY ---------------- */
+function changeApiKey(){
+  const val = prompt('Pegá tu API key de TMDB (v3 auth). Se guarda en tu base de datos.', tmdbKey || '');
+  if(val === null) return;
+  saveApiKey(val.trim());
+}
+
+async function saveApiKey(val){
+  tmdbKey = val;
+  try{
+    if(settingsRecordId){
+      await pb.collection('settings').update(settingsRecordId, { tmdb_api_key: val });
+    } else {
+      const rec = await pb.collection('settings').create({ tmdb_api_key: val });
+      settingsRecordId = rec.id;
+    }
+  }catch(e){ console.error('no se pudo guardar la api key', e); }
+}
+
+/* ---------------- TMDB SEARCH ---------------- */
+async function tmdbSearch(query){
+  const url = `https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&query=${encodeURIComponent(query)}&language=es-ES`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('TMDB search failed');
+  const data = await res.json();
+  return (data.results || []).filter(r => r.media_type === 'tv' || r.media_type === 'movie');
+}
+async function tmdbDetails(id, type){
+  const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${tmdbKey}&language=es-ES`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('TMDB details failed');
+  return await res.json();
+}
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  const q = e.target.value.trim();
+  clearTimeout(searchTimeout);
+  const box = document.getElementById('search-results');
+  if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
+  if(!tmdbKey){
+    box.innerHTML = `<div class="sr-item">Falta configurar tu API key de TMDB (botón abajo a la izquierda).</div>`;
+    box.classList.add('show');
+    return;
+  }
+  searchTimeout = setTimeout(async () => {
+    try{
+      const results = await tmdbSearch(q);
+      renderSearchResults(results);
+    }catch(err){
+      box.innerHTML = `<div class="sr-item">Error buscando en TMDB. Revisá tu API key.</div>`;
+      box.classList.add('show');
+    }
+  }, 400);
+});
+
+function renderSearchResults(results){
+  const box = document.getElementById('search-results');
+  if(!results.length){ box.innerHTML = `<div class="sr-item">Sin resultados</div>`; box.classList.add('show'); return; }
+  box.innerHTML = results.slice(0,10).map(r => {
+    const title = r.name || r.title;
+    const date = r.first_air_date || r.release_date || '';
+    const year = date ? date.split('-')[0] : '—';
+    return `<div class="sr-item" onclick="addTitle(${r.id}, '${r.media_type}')">
+      <img src="${IMG(r.poster_path,'w92')}" onerror="this.style.opacity=0">
+      <div class="sr-info"><div class="t">${title}</div><div class="y">${year} · ${r.media_type==='tv'?'Serie':'Película'}</div></div>
+    </div>`;
+  }).join('');
+  box.classList.add('show');
+}
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.search-wrap')) document.getElementById('search-results').classList.remove('show');
+});
+
+async function addTitle(tmdbId, type){
+  const details = await tmdbDetails(tmdbId, type);
+  const genreIds = (details.genres || []).map(g => g.id);
+  const category = genreIds.includes(35) ? 'Comedia' : 'Seria';
+
+  if(type === 'tv'){
+    const seasons = (details.seasons || []).filter(s => s.season_number > 0).map(s => ({
+      season_number: s.season_number, episode_count: s.episode_count, watched_episodes: []
+    }));
+    await pb.collection('series').create({
+      title: details.name, tmdb_id: tmdbId, poster_path: details.poster_path || '',
+      overview: details.overview || '', category, watch_status: 'pendientes',
+      is_favorite: false, seasons
+    });
+  } else {
+    await pb.collection('movies').create({
+      title: details.title, year: details.release_date ? parseInt(details.release_date.split('-')[0]) : null,
+      tmdb_id: tmdbId, poster_path: details.poster_path || '', overview: details.overview || '',
+      watch_status: 'pendientes', is_favorite: false, rewatch_count: 0
+    });
+  }
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').classList.remove('show');
+  await loadLibrary();
+  renderAll();
+}
+
+/* ---------------- NAV ---------------- */
+function toggleSidebar(){
+  const open = document.querySelector('.sidebar').classList.toggle('open');
+  document.querySelector('.sidebar-backdrop').classList.toggle('show', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.querySelector('.sidebar-backdrop').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function scrollContentTop(){
+  document.getElementById('content-scroll')?.scrollTo(0, 0);
+}
+function setView(v){
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === v));
+  closeSidebar();
+  scrollContentTop();
+  renderContent();
+}
+function setCatFilter(c){
+  currentCatFilter = c;
+  document.querySelectorAll('#cat-filters .chip').forEach(el => el.classList.toggle('active', el.dataset.cat === c));
+  scrollContentTop();
+  renderContent();
+}
+
+/* ---------------- UNIFIED LIBRARY ---------------- */
+function unifiedLibrary(){
+  const s = seriesLib.map(r => ({ ...r, kind:'tv', category: r.category || 'Seria' }));
+  const m = moviesLib.map(r => ({ ...r, kind:'movie', category:'Pelicula' }));
+  return s.concat(m);
+}
+
+/* ---------------- RENDER ---------------- */
+function renderAll(){
+  const lib = unifiedLibrary();
+  document.getElementById('c-viendo').textContent = lib.filter(l=>l.watch_status==='viendo').length;
+  document.getElementById('c-pendientes').textContent = lib.filter(l=>l.watch_status==='pendientes').length;
+  document.getElementById('c-visto').textContent = lib.filter(l=>l.watch_status==='visto').length;
+  document.getElementById('c-todo').textContent = lib.length;
+  renderContent();
+}
+
+function renderContent(){
+  const header = document.getElementById('view-header');
+  const content = document.getElementById('content');
+  const filterBar = document.getElementById('cat-filters');
+
+  if(currentView === 'stats'){
+    filterBar.style.visibility='hidden';
+    header.innerHTML = `<h2 class="section-title marquee">Estadísticas</h2><p class="section-sub">Tu perfil de espectador, en números.</p>`;
+    content.innerHTML = renderStatsBody();
+    return;
+  }
+  if(currentView === 'listas'){
+    filterBar.style.visibility='hidden';
+    header.innerHTML = `<h2 class="section-title marquee">Listas</h2><p class="section-sub">Tus listas custom importadas de TV Time.</p>`;
+    content.innerHTML = renderListsBody();
+    return;
+  }
+  if(currentView === 'recomendaciones'){
+    filterBar.style.visibility='hidden';
+    header.innerHTML = `<h2 class="section-title marquee">Recomendaciones IA</h2><p class="section-sub">Basadas en lo que ya viste y calificaste.</p>`;
+    renderRecommendations();
+    return;
+  }
+  filterBar.style.visibility='visible';
+
+  let items = unifiedLibrary();
+  if(currentView !== 'todo') items = items.filter(l => l.watch_status === currentView);
+  if(currentCatFilter !== 'all') items = items.filter(l => l.category === currentCatFilter);
+
+  const titles = { viendo:'Viendo', pendientes:'Pendientes', visto:'Visto', todo:'Toda la biblioteca' };
+  const subs = {
+    viendo:'Lo que tenés arrancado ahora mismo.', pendientes:'En la fila, esperando su turno.',
+    visto:'Terminado. Con calificación cuando la tengas.', todo:'Todo lo que trackeaste, en un solo lugar.'
+  };
+  header.innerHTML = `<h2 class="section-title marquee">${titles[currentView]}</h2><p class="section-sub">${subs[currentView]}</p>`;
+  if(!items.length){
+    content.innerHTML = `<div class="empty-state"><div class="big">🎬</div><div>Nada acá todavía.</div></div>`;
+  } else {
+    content.innerHTML = `<div class="grid">` + items.map(renderTicket).join('') + `</div>`;
+  }
+}
+
+function renderTicket(item){
+  let progress = '';
+  if(item.kind === 'tv' && item.seasons){
+    const total = item.seasons.reduce((a,s)=>a+s.episode_count,0);
+    const watched = item.seasons.reduce((a,s)=>a+(s.watched_episodes||[]).length,0);
+    const frames = Math.min(total, 24) || 1;
+    const filledFrames = total ? Math.round(frames * (watched/total)) : 0;
+    let strip = '';
+    for(let i=0;i<frames;i++) strip += `<div class="frame ${i<filledFrames?'on':''}"></div>`;
+    progress = `<div class="filmstrip">${strip}</div>`;
+  }
+  return `<div class="ticket" onclick="openDetail('${item.kind}','${item.id}')">
+    <span class="cat-tag ${item.category}">${item.category === 'Pelicula' ? 'Película' : item.category}</span>
+    <img class="poster" src="${IMG(item.poster_path)}" onerror="this.style.background='var(--surface-raised)'">
+    <div class="body">
+      <div class="title">${item.title}</div>
+      ${progress}
+      <div class="meta-row">
+        <span>${item.kind==='tv'?'Serie':(item.year||'')}</span>
+        ${item.rating ? `<span class="rating-badge">${item.rating}/10</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStatsBody(){
+  const lib = unifiedLibrary();
+  const total = lib.length;
+  const seria = lib.filter(l=>l.category==='Seria').length;
+  const comedia = lib.filter(l=>l.category==='Comedia').length;
+  const peliculas = lib.filter(l=>l.category==='Pelicula').length;
+  const visto = lib.filter(l=>l.watch_status==='visto').length;
+  const rated = lib.filter(l=>l.rating);
+  const avgRating = rated.length ? (rated.reduce((a,l)=>a+l.rating,0)/rated.length).toFixed(1) : '—';
+  const totalEpisodes = seriesLib.reduce((a,l)=> a + (l.seasons||[]).reduce((b,s)=>b+(s.watched_episodes||[]).length,0), 0);
+
+  const bar = (label, val, max, color) => `
+    <div class="bar-row"><span class="lbl">${label}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${max?Math.round(val/max*100):0}%; background:${color}"></div></div>
+      <span class="val">${val}</span></div>`;
+
+  return `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num">${total}</div><div class="lbl">Títulos trackeados</div></div>
+      <div class="stat-card"><div class="num">${visto}</div><div class="lbl">Terminados</div></div>
+      <div class="stat-card"><div class="num">${totalEpisodes}</div><div class="lbl">Episodios vistos</div></div>
+      <div class="stat-card"><div class="num">${avgRating}</div><div class="lbl">Rating promedio</div></div>
+    </div>
+    <h2 class="section-title marquee" style="font-size:18px; margin-bottom:16px;">Distribución</h2>
+    ${bar('Seria', seria, total, 'var(--seria)')}
+    ${bar('Comedia', comedia, total, 'var(--comedia)')}
+    ${bar('Películas', peliculas, total, 'var(--stub)')}
+  `;
+}
+
+function renderListsBody(){
+  if(!lists.length){
+    return `<div class="empty-state"><div class="big">📋</div><div>No hay listas importadas todavía.</div></div>`;
+  }
+  return lists.map(l => `<div class="list-card"><h3>${l.name}</h3>
+      <div class="items">${(l.items||[]).map(i=>i.name).join(' · ')}</div></div>`).join('');
+}
+
+async function renderRecommendations(){
+  const content = document.getElementById('content');
+  content.innerHTML = `<div class="rec-box">Pensando recomendaciones a partir de tu biblioteca...</div>`;
+  try{
+    const res = await fetch('/api/recommend');
+    const data = await res.json();
+    if(data.error){
+      content.querySelector('.rec-box').textContent = 'Error: ' + data.error;
+      return;
+    }
+    content.querySelector('.rec-box').textContent = data.recommendation;
+  }catch(e){
+    content.querySelector('.rec-box').textContent = 'No se pudo conectar con el servidor de recomendaciones.';
+  }
+}
+
+/* ---------------- DETAIL MODAL ---------------- */
+async function openDetail(kind, id){
+  const item = kind === 'tv' ? seriesLib.find(l=>l.id===id) : moviesLib.find(l=>l.id===id);
+  if(!item) return;
+  renderDetailModal(kind, item);
+  document.getElementById('detail-overlay').classList.add('show');
+}
+function closeDetail(){ document.getElementById('detail-overlay').classList.remove('show'); }
+
+function renderDetailModal(kind, item){
+  const modal = document.getElementById('detail-modal');
+  let seasonsHtml = '';
+  if(kind === 'tv'){
+    seasonsHtml = (item.seasons||[]).map(s => {
+      const chips = Array.from({length:s.episode_count}, (_,i)=>i+1).map(epNum => {
+        const on = (s.watched_episodes||[]).includes(epNum);
+        return `<div class="ep-chip ${on?'watched':''}" onclick="toggleEpisode('${item.id}', ${s.season_number}, ${epNum})">${epNum}</div>`;
+      }).join('');
+      return `<div class="season-block"><div class="season-title">Temporada ${s.season_number} — ${(s.watched_episodes||[]).length}/${s.episode_count}</div><div class="ep-grid">${chips}</div></div>`;
+    }).join('');
+  }
+  const catOptions = kind === 'tv'
+    ? `<option value="Seria" ${item.category==='Seria'?'selected':''}>Seria</option><option value="Comedia" ${item.category==='Comedia'?'selected':''}>Comedia</option>`
+    : '';
+
+  modal.innerHTML = `
+    <div style="position:relative;">
+      <button class="close-x" onclick="closeDetail()">✕</button>
+      <div class="modal-head">
+        <img src="${IMG(item.poster_path)}" onerror="this.style.background='var(--surface-raised)'">
+        <div class="info">
+          <h2>${item.title}</h2>
+          <div class="section-sub" style="margin:0;">${kind==='tv'?'Serie':'Película' + (item.year?' · '+item.year:'')}</div>
+          <div class="overview">${item.overview || 'Sin sinopsis disponible.'}</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field"><label>Estado</label>
+            <select onchange="updateField('${kind}','${item.id}','watch_status',this.value)">
+              <option value="pendientes" ${item.watch_status==='pendientes'?'selected':''}>Pendientes</option>
+              <option value="viendo" ${item.watch_status==='viendo'?'selected':''}>Viendo</option>
+              <option value="visto" ${item.watch_status==='visto'?'selected':''}>Visto</option>
+            </select>
+          </div>
+          ${kind==='tv' ? `<div class="field"><label>Categoría</label><select onchange="updateField('tv','${item.id}','category',this.value)">${catOptions}</select></div>` : ''}
+          <div class="field"><label>Rating (1-10)</label>
+            <select onchange="updateField('${kind}','${item.id}','rating',this.value?parseInt(this.value):null)">
+              <option value="">Sin calificar</option>
+              ${Array.from({length:10},(_,i)=>i+1).map(n=>`<option value="${n}" ${item.rating===n?'selected':''}>${n}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        ${seasonsHtml}
+      </div>
+      <div class="modal-footer">
+        <button class="btn danger" onclick="deleteItem('${kind}','${item.id}')">Eliminar de la biblioteca</button>
+        <button class="btn ghost" onclick="closeDetail()">Cerrar</button>
+      </div>
+    </div>`;
+}
+
+async function updateField(kind, id, field, value){
+  const collection = kind === 'tv' ? 'series' : 'movies';
+  await pb.collection(collection).update(id, { [field]: value });
+  await loadLibrary();
+  renderAll();
+  const item = kind === 'tv' ? seriesLib.find(l=>l.id===id) : moviesLib.find(l=>l.id===id);
+  if(item) renderDetailModal(kind, item);
+}
+
+async function toggleEpisode(id, seasonNum, epNum){
+  const item = seriesLib.find(l=>l.id===id);
+  if(!item) return;
+  const season = item.seasons.find(s=>s.season_number===seasonNum);
+  const idx = season.watched_episodes.indexOf(epNum);
+  if(idx>=0) season.watched_episodes.splice(idx,1); else season.watched_episodes.push(epNum);
+
+  const totalEps = item.seasons.reduce((a,s)=>a+s.episode_count,0);
+  const watchedEps = item.seasons.reduce((a,s)=>a+(s.watched_episodes||[]).length,0);
+  const watch_status = watchedEps===0 ? 'pendientes' : (watchedEps<totalEps ? 'viendo' : 'visto');
+
+  await pb.collection('series').update(id, { seasons: item.seasons, watch_status });
+  await loadLibrary();
+  renderAll();
+  const fresh = seriesLib.find(l=>l.id===id);
+  if(fresh) renderDetailModal('tv', fresh);
+}
+
+async function deleteItem(kind, id){
+  const collection = kind === 'tv' ? 'series' : 'movies';
+  await pb.collection(collection).delete(id);
+  closeDetail();
+  await loadLibrary();
+  renderAll();
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){ closeSidebar(); closeDetail(); }
+});
+
+init();
+</script>
+</body>
+</html>
