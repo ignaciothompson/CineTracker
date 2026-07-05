@@ -3,6 +3,7 @@ import { TicketGrid } from './TicketGrid';
 import { StatsView } from './StatsView';
 import { ListsView } from './ListsView';
 import { RecommendationsView } from './RecommendationsView';
+import { ImportView } from './ImportView';
 
 export function MainContent() {
   const { loading } = useLibraryContext();
@@ -17,6 +18,8 @@ export function MainContent() {
       return <StatsView />;
     case 'listas':
       return <ListsView />;
+    case 'importar':
+      return <ImportView />;
     case 'recomendaciones':
       return <RecommendationsView />;
     default:

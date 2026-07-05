@@ -22,6 +22,16 @@ export function ViewHeader() {
       </div>
     );
   }
+  if (currentView === 'importar') {
+    return (
+      <div className="view-header">
+        <h2 className="section-title marquee">Importar TV Time</h2>
+        <p className="section-sub">
+          Subí tus exports JSON sin usar la consola. Idempotente por tvtime_uuid.
+        </p>
+      </div>
+    );
+  }
   if (currentView === 'recomendaciones') {
     return (
       <div className="view-header">

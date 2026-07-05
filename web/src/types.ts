@@ -7,6 +7,7 @@ export type ViewId =
   | 'visto'
   | 'todo'
   | 'listas'
+  | 'importar'
   | 'stats'
   | 'recomendaciones';
 
@@ -115,6 +116,7 @@ export const NAV_ITEMS: { id: ViewId; label: string; showCount?: boolean }[] = [
   { id: 'visto', label: 'Visto', showCount: true },
   { id: 'todo', label: 'Toda la biblioteca', showCount: true },
   { id: 'listas', label: 'Listas' },
+  { id: 'importar', label: 'Importar TV Time' },
   { id: 'stats', label: 'Estadísticas' },
   { id: 'recomendaciones', label: 'Recomendaciones IA' },
 ];

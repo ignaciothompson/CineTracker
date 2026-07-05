@@ -1,0 +1,75 @@
+.import-result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.import-result-card.success {
+  border-color: color-mix(in srgb, var(--progress) 45%, var(--border));
+}
+
+.import-result-card.partial {
+  border-color: color-mix(in srgb, var(--stub) 45%, var(--border));
+}
+
+.import-result-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.import-result-card-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.import-result-card-total {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.import-result-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.import-stat {
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.import-stat-num {
+  display: block;
+  font-size: 22px;
+  font-family: ui-monospace, monospace;
+  line-height: 1.1;
+}
+
+.import-stat-lbl {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.import-stat.ok .import-stat-num {
+  color: var(--progress);
+}
+
+.import-stat.skip .import-stat-num {
+  color: var(--text-muted);
+}
+
+.import-stat.fail .import-stat-num {
+  color: var(--stub);
+}

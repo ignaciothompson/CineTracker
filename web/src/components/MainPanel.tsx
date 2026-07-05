@@ -7,7 +7,7 @@ import './MainPanel.css';
 
 export function MainPanel() {
   const { toggleSidebar, contentScrollRef, currentView } = useNavigationContext();
-  const showFilters = !['stats', 'listas', 'recomendaciones'].includes(currentView);
+  const showFilters = !['stats', 'listas', 'importar', 'recomendaciones'].includes(currentView);
 
   return (
     <main>
