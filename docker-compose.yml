@@ -7,7 +7,8 @@ services:
       # La clave para /api/recommend. Conseguila en console.anthropic.com
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     ports:
-      - "8091:8090"
+      # 5173 = app completa (Docker). Para dev con `npm run dev`, usá HOST_PORT=8092 en .env.
+      - "${HOST_PORT:-5173}:8090"
     volumes:
       # Solo los datos persisten en un volumen; el código (hooks/migraciones)
       # va horneado en la imagen, así Dokploy no depende de que un volumen

@@ -5,8 +5,8 @@ Normaliza temporadas de series en PocketBase:
 - recalcula watch_status
 
 Uso:
-    python repair_seasons.py --pb-url http://localhost:8091
-    python repair_seasons.py --pb-url http://localhost:8091 --dry-run
+    python repair_seasons.py --pb-url http://localhost:5173
+    python repair_seasons.py --pb-url http://localhost:5173 --dry-run
 """
 
 import argparse

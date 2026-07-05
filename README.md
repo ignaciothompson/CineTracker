@@ -28,7 +28,19 @@ cinetracker-pb/
 
 ## Desarrollo local del frontend
 
-Con PocketBase corriendo (ej. `docker compose up` en el puerto 8091):
+**Modo Docker (app completa, sin hot reload):**
+
+```bash
+docker compose up -d --build
+```
+
+Abrí http://localhost:5173
+
+**Modo dev (hot reload en el frontend):**
+
+1. En `.env`: `HOST_PORT=8092` (el backend no puede usar 5173 si Vite ya está ahí).
+2. `docker compose up -d`
+3. En otra terminal:
 
 ```bash
 cd web
@@ -36,7 +48,7 @@ npm install
 npm run dev
 ```
 
-Abrí http://localhost:5173 — Vite proxyea `/api/*` a PocketBase.
+Abrí http://localhost:5173 — Vite proxyea `/api/*` a PocketBase en `:8092`.
 
 Build producción (también lo hace el Dockerfile):
 
@@ -90,7 +102,7 @@ en tu export original.
 ya existe en PocketBase, lo salta. Podés correr el import de nuevo sin miedo:
 
 ```bash
-python3 import_data.py --pb-url http://localhost:8091 \
+python3 import_data.py --pb-url http://localhost:5173 \
   --series tvtime-series-2026-07-03.json \
   --movies tvtime-movies-2026-07-03.json \
   --lists tvtime-lists-2026-07-03.json
@@ -102,7 +114,7 @@ Para forzar duplicados (no recomendado): `--allow-duplicates`.
 Si ya importaste antes de este fix, corré:
 
 ```bash
-python3 repair_seasons.py --pb-url http://localhost:8091
+python3 repair_seasons.py --pb-url http://localhost:5173
 ```
 
 Tests del import:

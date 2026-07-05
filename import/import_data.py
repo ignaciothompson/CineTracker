@@ -11,7 +11,7 @@ Uso:
         --lists tvtime-lists-2026-07-03.json
 
     # Re-import sin duplicar (skip por tvtime_uuid):
-    python3 import_data.py --pb-url http://localhost:8091 --series export.json
+    python3 import_data.py --pb-url http://localhost:5173 --series export.json
 
 Requiere: pip install requests
 """
