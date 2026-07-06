@@ -201,6 +201,10 @@ function formatGenreList(genres) {
   return genres.map((g) => g.name).join(", ");
 }
 
+routerAdd("GET", "/api/chat/status", (e) => {
+  return e.json(200, { configured: !!getAnthropicKey(e.app) });
+});
+
 routerAdd("POST", "/api/chat", (e) => {
   const apiKey = getAnthropicKey(e.app);
   if (!apiKey) {

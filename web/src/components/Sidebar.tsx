@@ -5,7 +5,12 @@ import './Sidebar.css';
 export function Sidebar() {
   const { counts } = useLibraryContext();
   const { currentView, setView, sidebarOpen } = useNavigationContext();
-  const { promptApiKey, promptAnthropicApiKey } = useTmdbContext();
+  const { tmdbKey, anthropicReady, settingsReady, promptApiKey, promptAnthropicApiKey } =
+    useTmdbContext();
+
+  const showTmdbKeyBtn = settingsReady && !tmdbKey;
+  const showClaudeKeyBtn = settingsReady && !anthropicReady;
+  const showFooter = showTmdbKeyBtn || showClaudeKeyBtn;
 
   return (
     <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
@@ -36,14 +41,20 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="sidebar-footer">
-        <button type="button" className="ghost-btn" onClick={promptApiKey}>
-          TMDB API key
-        </button>
-        <button type="button" className="ghost-btn" onClick={promptAnthropicApiKey}>
-          Claude API key
-        </button>
-      </div>
+      {showFooter ? (
+        <div className="sidebar-footer">
+          {showTmdbKeyBtn ? (
+            <button type="button" className="ghost-btn" onClick={promptApiKey}>
+              TMDB API key
+            </button>
+          ) : null}
+          {showClaudeKeyBtn ? (
+            <button type="button" className="ghost-btn" onClick={promptAnthropicApiKey}>
+              Claude API key
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </aside>
   );
 }

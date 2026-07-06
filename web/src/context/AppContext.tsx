@@ -29,6 +29,7 @@ interface AppContextValue {
   counts: ReturnType<typeof countByStatus>;
   tmdbKey: string | null;
   anthropicKey: string | null;
+  anthropicReady: boolean;
   anthropicModel: ClaudeModelId;
   settingsReady: boolean;
   currentView: ViewId;
@@ -115,6 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     counts: libraryState.counts,
     tmdbKey: settings.tmdbKey,
     anthropicKey: settings.anthropicKey,
+    anthropicReady: settings.anthropicReady,
     anthropicModel: settings.anthropicModel,
     settingsReady: settings.ready,
     currentView: navigation.currentView,
@@ -237,6 +239,7 @@ export function useTmdbContext() {
   const {
     tmdbKey,
     anthropicKey,
+    anthropicReady,
     anthropicModel,
     settingsReady,
     saveApiKey,
@@ -249,6 +252,7 @@ export function useTmdbContext() {
   return {
     tmdbKey,
     anthropicKey,
+    anthropicReady,
     anthropicModel,
     settingsReady,
     saveApiKey,

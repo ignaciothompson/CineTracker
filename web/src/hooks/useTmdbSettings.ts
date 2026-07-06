@@ -5,6 +5,7 @@ import { pb } from '../lib/pocketbase';
 export function useTmdbSettings() {
   const [tmdbKey, setTmdbKey] = useState<string | null>(null);
   const [anthropicKey, setAnthropicKey] = useState<string | null>(null);
+  const [anthropicConfigured, setAnthropicConfigured] = useState(false);
   const [anthropicModel, setAnthropicModel] = useState<ClaudeModelId>(DEFAULT_CLAUDE_MODEL);
   const [settingsRecordId, setSettingsRecordId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -24,7 +25,19 @@ export function useTmdbSettings() {
   }, []);
 
   useEffect(() => {
-    void loadSettings().finally(() => setReady(true));
+    void (async () => {
+      await loadSettings();
+      try {
+        const res = await fetch('/api/chat/status');
+        if (res.ok) {
+          const data = (await res.json()) as { configured?: boolean };
+          setAnthropicConfigured(!!data.configured);
+        }
+      } catch {
+        /* chat hook optional */
+      }
+      setReady(true);
+    })();
   }, [loadSettings]);
 
   const saveSettings = useCallback(
@@ -89,6 +102,8 @@ export function useTmdbSettings() {
   return {
     tmdbKey,
     anthropicKey,
+    anthropicConfigured,
+    anthropicReady: !!(anthropicKey || anthropicConfigured),
     anthropicModel,
     ready,
     saveApiKey,
