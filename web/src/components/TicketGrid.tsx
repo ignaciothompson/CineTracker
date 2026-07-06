@@ -5,7 +5,7 @@ import { EmptyState } from './EmptyState';
 import './TicketGrid.css';
 
 export function TicketGrid() {
-  const { library } = useLibraryContext();
+  const { library, updateField } = useLibraryContext();
   const { currentView, mediaTab, genreFilter, searchQuery } = useNavigationContext();
   const { openDetail } = useDetailContext();
   const items = filterLibraryItems(library, currentView, mediaTab, searchQuery, genreFilter);
@@ -24,6 +24,11 @@ export function TicketGrid() {
           key={`${item.kind}-${item.id}`}
           item={item}
           onOpen={() => openDetail(item.kind, item.id)}
+          onMarkWatched={
+            item.kind === 'movie'
+              ? () => void updateField('movie', item.id, 'watch_status', 'visto')
+              : undefined
+          }
         />
       ))}
     </div>

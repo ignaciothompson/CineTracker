@@ -6,6 +6,7 @@ import './TicketCard.css';
 interface TicketCardProps {
   item: LibraryItem;
   onOpen: () => void;
+  onMarkWatched?: () => void;
 }
 
 function Filmstrip({ seasons }: { seasons: NonNullable<LibraryItem['seasons']> }) {
@@ -23,11 +24,27 @@ function Filmstrip({ seasons }: { seasons: NonNullable<LibraryItem['seasons']> }
   );
 }
 
-export function TicketCard({ item, onOpen }: TicketCardProps) {
+export function TicketCard({ item, onOpen, onMarkWatched }: TicketCardProps) {
   const tag = item.genres?.[0]?.name || (item.kind === 'tv' ? 'Serie' : 'Película');
+  const showMarkWatched =
+    item.kind === 'movie' && item.watch_status !== 'visto' && onMarkWatched;
 
   return (
     <div className="ticket" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onOpen()}>
+      {showMarkWatched ? (
+        <button
+          type="button"
+          className="ticket-mark-watched"
+          title="Marcar como visto"
+          aria-label={`Marcar ${item.title} como visto`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMarkWatched();
+          }}
+        >
+          ✓
+        </button>
+      ) : null}
       <span className={`cat-tag ${item.kind === 'tv' ? 'Serie' : 'Pelicula'}`}>{tag}</span>
       <img
         className="poster"

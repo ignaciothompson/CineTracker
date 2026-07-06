@@ -25,6 +25,15 @@ const movieItem: LibraryItem = {
   year: 2021,
 };
 
+const moviePending: LibraryItem = {
+  id: 'm2',
+  title: 'Inception',
+  kind: 'movie',
+  genres: [{ id: 878, name: 'Ciencia ficción' }],
+  watch_status: 'pendientes',
+  year: 2010,
+};
+
 describe('TicketCard', () => {
   it('renders series title, genre tag, rating and filmstrip', () => {
     render(<TicketCard item={tvItem} onOpen={vi.fn()} />);
@@ -51,5 +60,23 @@ describe('TicketCard', () => {
 
     fireEvent.click(screen.getByText('Dune').closest('.ticket')!);
     expect(onOpen).toHaveBeenCalledOnce();
+  });
+
+  it('shows mark-watched on non-visto movies and does not open detail', () => {
+    const onOpen = vi.fn();
+    const onMarkWatched = vi.fn();
+    render(
+      <TicketCard item={moviePending} onOpen={onOpen} onMarkWatched={onMarkWatched} />,
+    );
+
+    const btn = screen.getByRole('button', { name: /marcar inception como visto/i });
+    fireEvent.click(btn);
+    expect(onMarkWatched).toHaveBeenCalledOnce();
+    expect(onOpen).not.toHaveBeenCalled();
+  });
+
+  it('hides mark-watched when movie is already visto', () => {
+    render(<TicketCard item={movieItem} onOpen={vi.fn()} onMarkWatched={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /marcar dune como visto/i })).toBeNull();
   });
 });
