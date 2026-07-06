@@ -29,6 +29,8 @@ export interface SeriesRecord {
   overview?: string;
   tmdb_id?: number;
   tvtime_uuid?: string;
+  tvdb_id?: number | null;
+  imdb_id?: string | null;
   year?: number;
 }
 
@@ -43,6 +45,8 @@ export interface MovieRecord {
   overview?: string;
   tmdb_id?: number;
   tvtime_uuid?: string;
+  tvdb_id?: number | null;
+  imdb_id?: string | null;
   rewatch_count?: number;
 }
 

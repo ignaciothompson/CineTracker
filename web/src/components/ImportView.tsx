@@ -13,6 +13,7 @@ import {
 } from '../lib/tvtimeImport';
 import { ImportResultCard } from './import/ImportResultCard';
 import { JsonFileSlot } from './import/JsonFileSlot';
+import { EnrichPanel } from './import/EnrichPanel';
 import { TVTIME_IMPORT_SLOTS, type TvTimeImportKind } from './import/tvtimeImportConfig';
 import './ImportView.css';
 
@@ -114,7 +115,7 @@ export function ImportView() {
         <ol className="import-steps">
           <li>Exportá desde TV Time (series, películas, listas).</li>
           <li>Subí los archivos acá.</li>
-          <li>Después enriquecé posters con TMDB (sidebar o script).</li>
+          <li>Enriquecé posters con TMDB (sección de abajo).</li>
         </ol>
       </section>
 
@@ -203,13 +204,8 @@ export function ImportView() {
         </section>
       ) : null}
 
-      <section className="import-card import-tip">
-        <strong>Posters y sinopsis</strong>
-        <p>
-          TV Time no trae imágenes. Después del import usá búsqueda TMDB en la app
-          o el script <code>enrich_tmdb.py</code> desde tu PC.
-        </p>
-      </section>
+      <EnrichPanel disabled={running} />
+
     </div>
   );
 }

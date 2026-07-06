@@ -1,0 +1,85 @@
+.enrich-result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.enrich-result-card.success {
+  border-color: color-mix(in srgb, var(--progress) 45%, var(--border));
+}
+
+.enrich-result-card.partial {
+  border-color: color-mix(in srgb, var(--stub) 45%, var(--border));
+}
+
+.enrich-result-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.enrich-result-card-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.enrich-result-card-total {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.enrich-result-card-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.enrich-stat {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.enrich-stat-num {
+  display: block;
+  font-size: 18px;
+  font-family: ui-monospace, monospace;
+  line-height: 1.1;
+}
+
+.enrich-stat-lbl {
+  display: block;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.enrich-stat.updated .enrich-stat-num {
+  color: var(--progress);
+}
+
+.enrich-stat.skip .enrich-stat-num {
+  color: var(--text-muted);
+}
+
+.enrich-stat.nomatch .enrich-stat-num {
+  color: var(--comedia);
+}
+
+.enrich-stat.fail .enrich-stat-num {
+  color: var(--stub);
+}
+
+@media (max-width: 480px) {
+  .enrich-result-card-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

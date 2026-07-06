@@ -1,0 +1,60 @@
+.enrich-panel {
+  border-color: color-mix(in srgb, var(--seria) 35%, var(--border));
+}
+
+.enrich-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.enrich-panel-head .import-card-title {
+  margin-bottom: 0;
+}
+
+.enrich-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.enrich-missing-key {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.enrich-missing-key p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.enrich-pending-row {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+  margin-bottom: 14px;
+}
+
+.enrich-fill {
+  background: linear-gradient(90deg, var(--comedia), var(--seria));
+}
+
+.enrich-results {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.enrich-errors {
+  margin-top: 12px;
+}
