@@ -22,7 +22,21 @@ function getSettingsRecord(app) {
 }
 
 function getAnthropicKey() {
-  return $os.getenv("ANTHROPIC_API_KEY") || "";
+  var key = "";
+  try {
+    key = $os.getenv("ANTHROPIC_API_KEY") || "";
+  } catch (err) {}
+  if (!key && typeof process !== "undefined" && process.env && process.env.ANTHROPIC_API_KEY) {
+    key = process.env.ANTHROPIC_API_KEY;
+  }
+  key = String(key).trim();
+  if (
+    (key.charAt(0) === '"' && key.charAt(key.length - 1) === '"') ||
+    (key.charAt(0) === "'" && key.charAt(key.length - 1) === "'")
+  ) {
+    key = key.slice(1, -1).trim();
+  }
+  return key;
 }
 
 function getAnthropicModel(app, requested) {

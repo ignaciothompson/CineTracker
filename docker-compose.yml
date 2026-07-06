@@ -3,9 +3,11 @@ services:
     build: .
     container_name: cinetracker-pb
     restart: unless-stopped
+    # Pass-through: toma ANTHROPIC_* del entorno de Dokploy o del .env local.
+    # No uses ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} — si no interpola, pisa la var con "".
     environment:
-      # La clave para /api/recommend. Conseguila en console.anthropic.com
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_API_KEY
+      - ANTHROPIC_MODEL
     ports:
       # 5173 = app completa (Docker). Para dev con `npm run dev`, usá HOST_PORT=8092 en .env.
       - "${HOST_PORT:-5173}:8090"

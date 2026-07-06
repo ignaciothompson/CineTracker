@@ -68,11 +68,13 @@ npm test
 
 1. Subí esta carpeta a un repo de git (GitHub/GitLab) o usá el deploy manual de Dokploy con estos archivos.
 2. En Dokploy: creá una nueva app de tipo **Docker Compose**, apuntá al repo (o pegá el contenido de `docker-compose.yml`).
-3. En la sección **Environment**, agregá:
+3. En la sección **Environment**, agregá (sin comillas, valor real de sk-ant-...):
    ```
-   ANTHROPIC_API_KEY=sk-ant-...
+   ANTHROPIC_API_KEY=sk-ant-api03-...
    ```
-   (console.anthropic.com — **solo variable de entorno**, no se guarda en la base de datos)
+   Opcional: `ANTHROPIC_MODEL=claude-sonnet-5`
+
+   Verificá después del deploy: `GET https://tu-dominio.com/api/chat/status` → `{"configured":true}`.
 4. Asigná un dominio al servicio (Dokploy te da HTTPS automático con Let's Encrypt).
 5. Deploy. La primera vez, PocketBase corre las migraciones solo y crea las colecciones `series`, `movies`, `lists`, `settings`.
 6. Entrá a `https://tu-dominio.com/_/` para crear tu superusuario admin (es distinto del acceso a la app, es solo para vos administrar la base de datos si hace falta).
