@@ -2,7 +2,7 @@ import { useLibraryContext, useNavigationContext } from '../context/AppContext';
 import { TicketGrid } from './TicketGrid';
 import { StatsView } from './StatsView';
 import { ListsView } from './ListsView';
-import { RecommendationsView } from './RecommendationsView';
+import { ChatView } from './ChatView';
 import { ImportView } from './ImportView';
 
 export function MainContent() {
@@ -20,8 +20,8 @@ export function MainContent() {
       return <ListsView />;
     case 'importar':
       return <ImportView />;
-    case 'recomendaciones':
-      return <RecommendationsView />;
+    case 'chat':
+      return <ChatView />;
     default:
       return <TicketGrid />;
   }

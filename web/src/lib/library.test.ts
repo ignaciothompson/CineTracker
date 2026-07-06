@@ -3,27 +3,30 @@ import {
   collectionForKind,
   computeWatchStatus,
   countByStatus,
+  getRecentWatched,
   unifiedLibrary,
   visibleSeasons,
   isSeasonFullyWatched,
 } from './library';
-import type { LibraryItem, MovieRecord, SeriesRecord } from '../types';
+import type { MovieRecord, SeriesRecord } from '../types';
 
 const seriesFixture: SeriesRecord[] = [
   {
     id: 's1',
     title: 'The Bear',
     watch_status: 'viendo',
-    category: 'Comedia',
+    genres: ['Comedia'],
     seasons: [
       { season_number: 1, episode_count: 8, watched_episodes: [1, 2, 3] },
     ],
+    updated: '2026-07-01',
   },
   {
     id: 's2',
     title: 'Elite',
     watch_status: 'visto',
-    category: '',
+    genres: ['Drama'],
+    watched_at: '2026-07-02',
   },
 ];
 
@@ -34,6 +37,7 @@ const moviesFixture: MovieRecord[] = [
     watch_status: 'visto',
     year: 2010,
     rating: 8,
+    watched_at: '2026-07-05',
   },
   {
     id: 'm2',
@@ -44,14 +48,12 @@ const moviesFixture: MovieRecord[] = [
 ];
 
 describe('unifiedLibrary', () => {
-  it('merges series and movies with correct kind and category defaults', () => {
+  it('merges series and movies with correct kind', () => {
     const lib = unifiedLibrary(seriesFixture, moviesFixture);
 
     expect(lib).toHaveLength(4);
-    expect(lib[0]).toMatchObject({ id: 's1', kind: 'tv', category: 'Comedia' });
-    expect(lib[1]).toMatchObject({ id: 's2', kind: 'tv', category: 'Seria' });
-    expect(lib[2]).toMatchObject({ id: 'm1', kind: 'movie', category: 'Pelicula' });
-    expect(lib[3]).toMatchObject({ id: 'm2', kind: 'movie', category: 'Pelicula' });
+    expect(lib[0]).toMatchObject({ id: 's1', kind: 'tv', genres: [{ id: 0, name: 'Comedia' }] });
+    expect(lib[2]).toMatchObject({ id: 'm1', kind: 'movie' });
   });
 });
 
@@ -62,8 +64,17 @@ describe('countByStatus', () => {
       viendo: 1,
       pendientes: 1,
       visto: 2,
+      abandonadas: 0,
       todo: 4,
     });
+  });
+});
+
+describe('getRecentWatched', () => {
+  it('returns up to 5 visto items sorted by watched_at', () => {
+    const lib = unifiedLibrary(seriesFixture, moviesFixture);
+    const recent = getRecentWatched(lib, 5);
+    expect(recent.map((r) => r.title)).toEqual(['Megamind', 'Elite']);
   });
 });
 
@@ -124,7 +135,16 @@ describe('countByStatus edge cases', () => {
       viendo: 0,
       pendientes: 0,
       visto: 0,
+      abandonadas: 0,
       todo: 0,
     });
+  });
+
+  it('counts abandonadas bucket', () => {
+    const lib = unifiedLibrary(
+      [{ id: 's1', title: 'Dropped', watch_status: 'abandonadas' }],
+      [],
+    );
+    expect(countByStatus(lib).abandonadas).toBe(1);
   });
 });

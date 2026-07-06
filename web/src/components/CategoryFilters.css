@@ -21,7 +21,26 @@
   border-color: var(--text);
 }
 
+.genre-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
 @media (max-width: 1023px) {
+  .genre-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .genre-filters::-webkit-scrollbar {
+    display: none;
+  }
+
   .filters {
     overflow-x: auto;
     flex-wrap: nowrap;

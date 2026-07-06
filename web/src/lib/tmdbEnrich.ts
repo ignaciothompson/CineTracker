@@ -1,4 +1,6 @@
 import { pb } from './pocketbase';
+import { genreIdsToGenres, normalizeGenresList } from './tmdbGenres';
+import type { TmdbGenre } from '../types';
 
 const TMDB_FIND = 'https://api.themoviedb.org/3/find';
 const ENRICH_DELAY_MS = 50;
@@ -16,7 +18,7 @@ export interface EnrichableRecord {
   tmdb_id?: number | null;
   tvdb_id?: number | null;
   imdb_id?: string | null;
-  category?: string | null;
+  genres?: TmdbGenre[] | null;
 }
 
 export interface EnrichStats {
@@ -33,22 +35,18 @@ export interface EnrichProgress {
   total: number;
 }
 
-export function suggestSeriesCategory(genreIds: number[] | undefined): 'Comedia' | 'Seria' {
-  return genreIds?.includes(35) ? 'Comedia' : 'Seria';
-}
-
 export function buildEnrichPayload(
   match: TmdbFindMatch,
   mediaType: 'tv' | 'movie',
-  existingCategory?: string | null,
+  existingGenres?: TmdbGenre[] | null,
 ): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     tmdb_id: match.id,
     poster_path: match.poster_path || '',
     overview: match.overview || '',
   };
-  if (mediaType === 'tv' && !existingCategory) {
-    payload.category = suggestSeriesCategory(match.genre_ids);
+  if (!normalizeGenresList(existingGenres).length) {
+    payload.genres = genreIdsToGenres(match.genre_ids, mediaType);
   }
   return payload;
 }
@@ -115,7 +113,7 @@ export async function enrichCollection(
       if (!match) {
         stats.noMatch += 1;
       } else {
-        const payload = buildEnrichPayload(match, mediaType, item.category);
+        const payload = buildEnrichPayload(match, mediaType, item.genres);
         await pb.collection(collection).update(item.id, payload);
         stats.updated += 1;
       }

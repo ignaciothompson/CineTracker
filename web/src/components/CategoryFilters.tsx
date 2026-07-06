@@ -1,20 +1,20 @@
 import { useNavigationContext } from '../context/AppContext';
-import { CATEGORY_FILTERS } from '../types';
+import { MEDIA_TABS } from '../types';
 import './CategoryFilters.css';
 
-export function CategoryFilters({ hidden }: { hidden: boolean }) {
-  const { catFilter, setCatFilter } = useNavigationContext();
+export function MediaTabs({ hidden }: { hidden: boolean }) {
+  const { mediaTab, setMediaTab } = useNavigationContext();
 
   return (
-    <div className="filters" id="cat-filters" style={{ visibility: hidden ? 'hidden' : 'visible' }}>
-      {CATEGORY_FILTERS.map((f) => (
+    <div className="filters" id="media-tabs" style={{ visibility: hidden ? 'hidden' : 'visible' }}>
+      {MEDIA_TABS.map((f) => (
         <div
           key={f.id}
-          className={`chip${catFilter === f.id ? ' active' : ''}`}
-          onClick={() => setCatFilter(f.id)}
+          className={`chip${mediaTab === f.id ? ' active' : ''}`}
+          onClick={() => setMediaTab(f.id)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && setCatFilter(f.id)}
+          onKeyDown={(e) => e.key === 'Enter' && setMediaTab(f.id)}
         >
           {f.label}
         </div>
@@ -22,3 +22,6 @@ export function CategoryFilters({ hidden }: { hidden: boolean }) {
     </div>
   );
 }
+
+/** @deprecated use MediaTabs */
+export const CategoryFilters = MediaTabs;

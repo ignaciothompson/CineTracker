@@ -24,11 +24,11 @@ function Filmstrip({ seasons }: { seasons: NonNullable<LibraryItem['seasons']> }
 }
 
 export function TicketCard({ item, onOpen }: TicketCardProps) {
-  const catLabel = item.category === 'Pelicula' ? 'Película' : item.category;
+  const tag = item.genres?.[0]?.name || (item.kind === 'tv' ? 'Serie' : 'Película');
 
   return (
     <div className="ticket" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onOpen()}>
-      <span className={`cat-tag ${item.category}`}>{catLabel}</span>
+      <span className={`cat-tag ${item.kind === 'tv' ? 'Serie' : 'Pelicula'}`}>{tag}</span>
       <img
         className="poster"
         src={tmdbImg(item.poster_path)}

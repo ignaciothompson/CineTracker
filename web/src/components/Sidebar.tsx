@@ -5,7 +5,7 @@ import './Sidebar.css';
 export function Sidebar() {
   const { counts } = useLibraryContext();
   const { currentView, setView, sidebarOpen } = useNavigationContext();
-  const { promptApiKey } = useTmdbContext();
+  const { promptApiKey, promptAnthropicApiKey } = useTmdbContext();
 
   return (
     <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
@@ -39,6 +39,9 @@ export function Sidebar() {
       <div className="sidebar-footer">
         <button type="button" className="ghost-btn" onClick={promptApiKey}>
           TMDB API key
+        </button>
+        <button type="button" className="ghost-btn" onClick={promptAnthropicApiKey}>
+          Claude API key
         </button>
       </div>
     </aside>

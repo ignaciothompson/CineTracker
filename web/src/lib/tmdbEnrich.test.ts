@@ -1,44 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { buildEnrichPayload, suggestSeriesCategory } from './tmdbEnrich';
-
-describe('suggestSeriesCategory', () => {
-  it('returns Comedia when genre 35 present', () => {
-    expect(suggestSeriesCategory([35, 18])).toBe('Comedia');
-  });
-
-  it('returns Seria otherwise', () => {
-    expect(suggestSeriesCategory([18])).toBe('Seria');
-    expect(suggestSeriesCategory(undefined)).toBe('Seria');
-  });
-});
+import { buildEnrichPayload } from './tmdbEnrich';
 
 describe('buildEnrichPayload', () => {
-  it('adds category for series without one', () => {
-    expect(
-      buildEnrichPayload(
-        { id: 1, poster_path: '/p.jpg', overview: 'Synopsis', genre_ids: [35] },
-        'tv',
-        '',
-      ),
-    ).toMatchObject({
+  it('adds genres for series without existing genres', () => {
+    const payload = buildEnrichPayload(
+      { id: 1, poster_path: '/p.jpg', overview: 'x', genre_ids: [35, 18] },
+      'tv',
+      null,
+    );
+    expect(payload).toMatchObject({
       tmdb_id: 1,
-      poster_path: '/p.jpg',
-      overview: 'Synopsis',
-      category: 'Comedia',
+      genres: [
+        { id: 35, name: 'Comedia' },
+        { id: 18, name: 'Drama' },
+      ],
     });
   });
 
-  it('does not overwrite existing category', () => {
+  it('does not overwrite existing genres', () => {
     const payload = buildEnrichPayload(
       { id: 2, genre_ids: [35] },
       'tv',
-      'Seria',
+      [{ id: 18, name: 'Drama' }],
     );
-    expect(payload.category).toBeUndefined();
+    expect(payload.genres).toBeUndefined();
   });
 
-  it('skips category for movies', () => {
-    const payload = buildEnrichPayload({ id: 3 }, 'movie', null);
-    expect(payload.category).toBeUndefined();
+  it('adds genres for movies', () => {
+    const payload = buildEnrichPayload({ id: 3, genre_ids: [878, 28] }, 'movie', []);
+    expect(payload.genres).toEqual([
+      { id: 878, name: 'Ciencia ficción' },
+      { id: 28, name: 'Acción' },
+    ]);
   });
 });

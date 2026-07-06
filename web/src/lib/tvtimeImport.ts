@@ -125,7 +125,6 @@ export async function importSeriesFromExport(
         title: s.title || 'Sin título',
         tvtime_status: s.status || '',
         watch_status: status,
-        category: '',
         is_favorite: Boolean(s.is_favorite),
         seasons,
       });

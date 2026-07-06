@@ -1,13 +1,14 @@
 import { useNavigationContext } from '../context/AppContext';
 import { TmdbSearch } from './TmdbSearch';
-import { CategoryFilters } from './CategoryFilters';
+import { MediaTabs } from './CategoryFilters';
+import { GenreFilterChips } from './GenreFilterChips';
 import { ViewHeader } from './ViewHeader';
 import { MainContent } from './MainContent';
 import './MainPanel.css';
 
 export function MainPanel() {
   const { toggleSidebar, contentScrollRef, currentView } = useNavigationContext();
-  const showFilters = !['stats', 'listas', 'importar', 'recomendaciones'].includes(currentView);
+  const showFilters = !['stats', 'listas', 'importar', 'chat'].includes(currentView);
 
   return (
     <main>
@@ -25,7 +26,8 @@ export function MainPanel() {
         </div>
         <div className="topbar">
           <TmdbSearch />
-          <CategoryFilters hidden={!showFilters} />
+          <MediaTabs hidden={!showFilters} />
+          <GenreFilterChips hidden={!showFilters} />
         </div>
         <ViewHeader />
       </div>

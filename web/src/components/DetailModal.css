@@ -15,6 +15,7 @@
 }
 
 .modal {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -23,29 +24,29 @@
   overflow: hidden;
 }
 
-.modal-head {
+.detail-head {
   display: flex;
   gap: 20px;
   padding: 24px;
   border-bottom: 1px solid var(--border);
 }
 
-.modal-head img {
+.detail-head img {
   width: 130px;
   border-radius: 6px;
   background: var(--surface-raised);
 }
 
-.modal-head .info {
+.detail-head .info {
   flex: 1;
 }
 
-.modal-head h2 {
+.detail-head h2 {
   font-size: 22px;
   margin-bottom: 6px;
 }
 
-.modal-head .overview {
+.detail-head .overview {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
@@ -54,7 +55,7 @@
   overflow-y: auto;
 }
 
-.modal-body {
+.detail-body {
   padding: 20px 24px;
 }
 
@@ -190,7 +191,7 @@
   border-color: var(--progress);
 }
 
-.modal-footer {
+.detail-footer {
   display: flex;
   justify-content: space-between;
   padding: 16px 24px;
@@ -201,6 +202,7 @@
   position: absolute;
   top: 16px;
   right: 20px;
+  z-index: 2;
   cursor: pointer;
   color: var(--text-muted);
   font-size: 20px;
@@ -208,64 +210,17 @@
   border: none;
 }
 
-@media (max-width: 1023px) {
-  .overlay {
-    padding: 0;
-    align-items: stretch;
-  }
-
-  .modal {
-    border-radius: 0;
-    max-width: none;
-    min-height: 100vh;
-  }
-
-  .modal-head {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 20px 16px;
-    gap: 14px;
-  }
-
-  .modal-head img {
-    width: 160px;
-    max-width: 60vw;
-  }
-
-  .modal-head .overview {
-    max-height: none;
-    text-align: left;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .modal-footer {
-    flex-direction: column-reverse;
-    gap: 10px;
-    padding: 16px;
-  }
-
-  .modal-footer .btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .field-row {
-    gap: 12px;
-  }
-
-  .field {
-    flex: 1 1 calc(50% - 12px);
-    min-width: 120px;
-  }
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-@media (max-width: 480px) {
-  .close-x {
-    top: 12px;
-    right: 12px;
-  }
+.genre-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  font-size: 12px;
+  color: var(--text-muted);
 }

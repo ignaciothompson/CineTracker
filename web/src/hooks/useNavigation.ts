@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
-import type { Category, ViewId } from '../types';
+import type { MediaTab, ViewId } from '../types';
 
 export function useNavigation() {
   const [currentView, setCurrentView] = useState<ViewId>('viendo');
-  const [catFilter, setCatFilterState] = useState<Category | 'all'>('all');
-  const [searchQuery, setSearchQueryState] = useState('');
+  const [mediaTab, setMediaTabState] = useState<MediaTab>('todo');
+  const [genreFilter, setGenreFilterState] = useState<string[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
@@ -29,15 +29,34 @@ export function useNavigation() {
     (view: ViewId) => {
       setCurrentView(view);
       setSearchQueryState('');
+      setGenreFilterState([]);
       closeSidebar();
       scrollContentTop();
     },
     [closeSidebar, scrollContentTop],
   );
 
-  const setCatFilter = useCallback(
-    (cat: Category | 'all') => {
-      setCatFilterState(cat);
+  const setMediaTab = useCallback(
+    (tab: MediaTab) => {
+      setMediaTabState(tab);
+      scrollContentTop();
+    },
+    [scrollContentTop],
+  );
+
+  const setGenreFilter = useCallback(
+    (genres: string[]) => {
+      setGenreFilterState(genres);
+      scrollContentTop();
+    },
+    [scrollContentTop],
+  );
+
+  const toggleGenreFilter = useCallback(
+    (name: string) => {
+      setGenreFilterState((prev) =>
+        prev.includes(name) ? prev.filter((g) => g !== name) : [...prev, name],
+      );
       scrollContentTop();
     },
     [scrollContentTop],
@@ -53,12 +72,15 @@ export function useNavigation() {
 
   return {
     currentView,
-    catFilter,
+    mediaTab,
+    genreFilter,
     searchQuery,
     sidebarOpen,
     contentScrollRef,
     setView,
-    setCatFilter,
+    setMediaTab,
+    setGenreFilter,
+    toggleGenreFilter,
     setSearchQuery,
     toggleSidebar,
     closeSidebar,

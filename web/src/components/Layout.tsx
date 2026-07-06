@@ -1,7 +1,7 @@
 import { Sidebar } from './Sidebar';
 import { SidebarBackdrop } from './SidebarBackdrop';
 import { MainPanel } from './MainPanel';
-import { DetailModal } from './DetailModal';
+import { DetailView } from './DetailView';
 
 export function Layout() {
   return (
@@ -9,7 +9,7 @@ export function Layout() {
       <SidebarBackdrop />
       <Sidebar />
       <MainPanel />
-      <DetailModal />
+      <DetailView />
     </div>
   );
 }

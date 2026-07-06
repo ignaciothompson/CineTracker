@@ -1,0 +1,111 @@
+.detail-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-screen-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.detail-back-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.detail-screen-title {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-screen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--surface);
+}
+
+.detail-screen-scroll .detail-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-screen-scroll .detail-head img {
+  width: 160px;
+  max-width: 60vw;
+  border-radius: 6px;
+  background: var(--surface-raised);
+}
+
+.detail-screen-scroll .detail-head .info {
+  width: 100%;
+}
+
+.detail-screen-scroll .detail-head h2 {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.detail-screen-scroll .detail-head .overview {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 10px;
+  text-align: left;
+}
+
+.detail-screen-scroll .detail-body {
+  padding: 16px;
+}
+
+.detail-screen-scroll .detail-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+
+.detail-screen-scroll .detail-footer .btn {
+  width: 100%;
+  text-align: center;
+}
+
+.detail-screen-scroll .field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-screen-scroll .field {
+  flex: 1 1 calc(50% - 12px);
+  min-width: 120px;
+}

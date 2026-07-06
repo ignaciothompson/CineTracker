@@ -20,8 +20,3 @@ export async function tmdbDetails(apiKey: string, id: number, type: 'tv' | 'movi
   if (!res.ok) throw new Error('TMDB details failed');
   return res.json();
 }
-
-export async function fetchRecommendations() {
-  const res = await fetch('/api/recommend');
-  return res.json();
-}

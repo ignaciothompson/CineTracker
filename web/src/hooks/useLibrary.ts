@@ -4,6 +4,7 @@ import {
   collectionForKind,
   computeWatchStatus,
   countByStatus,
+  todayDateString,
   unifiedLibrary,
 } from '../lib/library';
 import { tmdbDetails } from '../lib/tmdb';
@@ -15,7 +16,8 @@ import type {
   MediaKind,
   SeriesRecord,
 } from '../types';
-import { buildListItem, isItemInList, listItemRef } from '../lib/lists';
+import { genresFromTmdbDetails } from '../lib/tmdbGenres';
+import { buildListItem, listItemRef } from '../lib/lists';
 
 export function useLibrary(tmdbKey: string | null) {
   const [loading, setLoading] = useState(true);
@@ -61,8 +63,7 @@ export function useLibrary(tmdbKey: string | null) {
     async (tmdbId: number, type: 'tv' | 'movie') => {
       if (!tmdbKey) return;
       const details = await tmdbDetails(tmdbKey, tmdbId, type);
-      const genreIds = (details.genres || []).map((g: { id: number }) => g.id);
-      const category = genreIds.includes(35) ? 'Comedia' : 'Seria';
+      const genres = genresFromTmdbDetails(details.genres);
 
       if (type === 'tv') {
         const seasons = (details.seasons || [])
@@ -77,7 +78,7 @@ export function useLibrary(tmdbKey: string | null) {
           tmdb_id: tmdbId,
           poster_path: details.poster_path || '',
           overview: details.overview || '',
-          category,
+          genres,
           watch_status: 'pendientes',
           is_favorite: false,
           seasons,
@@ -89,6 +90,7 @@ export function useLibrary(tmdbKey: string | null) {
           tmdb_id: tmdbId,
           poster_path: details.poster_path || '',
           overview: details.overview || '',
+          genres,
           watch_status: 'pendientes',
           is_favorite: false,
           rewatch_count: 0,
@@ -101,11 +103,27 @@ export function useLibrary(tmdbKey: string | null) {
 
   const updateField = useCallback(
     async (kind: LibraryItem['kind'], id: string, field: string, value: unknown) => {
-      await pb.collection(collectionForKind(kind)).update(id, { [field]: value });
+      const patch: Record<string, unknown> = { [field]: value };
+      if (field === 'watch_status' && value === 'visto') {
+        patch.watched_at = todayDateString();
+      }
+      await pb.collection(collectionForKind(kind)).update(id, patch);
       await reloadLibrary();
     },
     [reloadLibrary],
   );
+
+  const patchSeriesWatch = (
+    item: SeriesRecord,
+    seasons: SeriesRecord['seasons'],
+    watch_status: LibraryItem['watch_status'],
+  ) => {
+    const patch: Record<string, unknown> = { seasons, watch_status };
+    if (watch_status === 'visto' && item.watch_status !== 'visto') {
+      patch.watched_at = todayDateString();
+    }
+    return patch;
+  };
 
   const toggleEpisode = useCallback(
     async (id: string, seasonNum: number, epNum: number) => {
@@ -117,8 +135,9 @@ export function useLibrary(tmdbKey: string | null) {
       const idx = season.watched_episodes.indexOf(epNum);
       if (idx >= 0) season.watched_episodes.splice(idx, 1);
       else season.watched_episodes.push(epNum);
-      const watch_status = computeWatchStatus(seasons);
-      await pb.collection('series').update(id, { seasons, watch_status });
+      const watch_status =
+        item.watch_status === 'abandonadas' ? 'abandonadas' : computeWatchStatus(seasons);
+      await pb.collection('series').update(id, patchSeriesWatch(item, seasons, watch_status));
       await reloadLibrary();
     },
     [reloadLibrary, series],
@@ -136,8 +155,9 @@ export function useLibrary(tmdbKey: string | null) {
       const fullyWatched = allEps.every((n) => season.watched_episodes.includes(n));
       season.watched_episodes = fullyWatched ? [] : allEps;
 
-      const watch_status = computeWatchStatus(seasons);
-      await pb.collection('series').update(id, { seasons, watch_status });
+      const watch_status =
+        item.watch_status === 'abandonadas' ? 'abandonadas' : computeWatchStatus(seasons);
+      await pb.collection('series').update(id, patchSeriesWatch(item, seasons, watch_status));
       await reloadLibrary();
     },
     [reloadLibrary, series],

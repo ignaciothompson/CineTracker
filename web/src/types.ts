@@ -1,15 +1,22 @@
-export type WatchStatus = 'pendientes' | 'viendo' | 'visto';
-export type Category = 'Seria' | 'Comedia' | 'Pelicula';
+export interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
+export type WatchStatus = 'pendientes' | 'viendo' | 'visto' | 'abandonadas';
 export type MediaKind = 'tv' | 'movie';
+export type MediaTab = 'todo' | 'tv' | 'movie';
+export type RecommendationFeedback = 'sin_calificar' | 'buena' | 'mala';
 export type ViewId =
   | 'viendo'
   | 'pendientes'
   | 'visto'
+  | 'abandonadas'
   | 'todo'
   | 'listas'
   | 'importar'
   | 'stats'
-  | 'recomendaciones';
+  | 'chat';
 
 export interface Season {
   season_number: number;
@@ -20,7 +27,6 @@ export interface Season {
 export interface SeriesRecord {
   id: string;
   title: string;
-  category?: Category | '';
   watch_status?: WatchStatus;
   is_favorite?: boolean;
   seasons?: Season[];
@@ -28,10 +34,13 @@ export interface SeriesRecord {
   poster_path?: string;
   overview?: string;
   tmdb_id?: number;
+  genres?: TmdbGenre[];
   tvtime_uuid?: string;
   tvdb_id?: number | null;
   imdb_id?: string | null;
   year?: number;
+  watched_at?: string;
+  updated?: string;
 }
 
 export interface MovieRecord {
@@ -44,10 +53,13 @@ export interface MovieRecord {
   poster_path?: string;
   overview?: string;
   tmdb_id?: number;
+  genres?: TmdbGenre[];
   tvtime_uuid?: string;
   tvdb_id?: number | null;
   imdb_id?: string | null;
   rewatch_count?: number;
+  watched_at?: string;
+  updated?: string;
 }
 
 export interface ListItem {
@@ -67,19 +79,44 @@ export interface ListRecord {
 export interface SettingsRecord {
   id: string;
   tmdb_api_key?: string;
+  anthropic_api_key?: string;
+  anthropic_model?: string;
+}
+
+export interface RefItem {
+  kind: MediaKind;
+  id: string;
+  title: string;
+}
+
+export interface SeedContext {
+  last_watched: RefItem[];
+  genres: TmdbGenre[];
+  reference_titles: RefItem[];
+}
+
+export interface AiRecommendationRecord {
+  id: string;
+  seed_context?: SeedContext;
+  recommendation_text?: string;
+  chosen_title?: string;
+  feedback?: RecommendationFeedback;
+  created?: string;
 }
 
 export interface LibraryItem {
   id: string;
   title: string;
   kind: MediaKind;
-  category: Category;
   watch_status?: WatchStatus;
   rating?: number | null;
   poster_path?: string;
   overview?: string;
   year?: number | null;
   seasons?: Season[];
+  genres?: TmdbGenre[];
+  updated?: string;
+  watched_at?: string;
 }
 
 export interface TmdbSearchResult {
@@ -98,29 +135,30 @@ export interface DetailTarget {
 }
 
 export const VIEW_META: Record<
-  Exclude<ViewId, 'listas' | 'stats' | 'recomendaciones'>,
+  Exclude<ViewId, 'listas' | 'stats' | 'chat'>,
   { title: string; sub: string }
 > = {
   viendo: { title: 'Viendo', sub: 'Lo que tenés arrancado ahora mismo.' },
   pendientes: { title: 'Pendientes', sub: 'En la fila, esperando su turno.' },
   visto: { title: 'Visto', sub: 'Terminado. Con calificación cuando la tengas.' },
+  abandonadas: { title: 'Abandonadas', sub: 'Arrancaste pero no seguiste. Lo marcás vos a mano.' },
   todo: { title: 'Toda la biblioteca', sub: 'Todo lo que trackeaste, en un solo lugar.' },
 };
 
-export const CATEGORY_FILTERS: { id: Category | 'all'; label: string }[] = [
-  { id: 'all', label: 'Todo' },
-  { id: 'Seria', label: 'Seria' },
-  { id: 'Comedia', label: 'Comedia' },
-  { id: 'Pelicula', label: 'Películas' },
+export const MEDIA_TABS: { id: MediaTab; label: string }[] = [
+  { id: 'todo', label: 'Todo' },
+  { id: 'tv', label: 'Series' },
+  { id: 'movie', label: 'Películas' },
 ];
 
 export const NAV_ITEMS: { id: ViewId; label: string; showCount?: boolean }[] = [
   { id: 'viendo', label: 'Viendo', showCount: true },
   { id: 'pendientes', label: 'Pendientes', showCount: true },
   { id: 'visto', label: 'Visto', showCount: true },
+  { id: 'abandonadas', label: 'Abandonadas', showCount: true },
   { id: 'todo', label: 'Toda la biblioteca', showCount: true },
   { id: 'listas', label: 'Listas' },
   { id: 'importar', label: 'Importar TV Time' },
   { id: 'stats', label: 'Estadísticas' },
-  { id: 'recomendaciones', label: 'Recomendaciones IA' },
+  { id: 'chat', label: 'Chat IA' },
 ];

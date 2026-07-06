@@ -9,11 +9,12 @@ import { useLibrary } from '../hooks/useLibrary';
 import { useNavigation } from '../hooks/useNavigation';
 import { useTmdbSettings } from '../hooks/useTmdbSettings';
 import { countByStatus } from '../lib/library';
+import type { ClaudeModelId } from '../lib/claudeModels';
 import type {
-  Category,
   DetailTarget,
   LibraryItem,
   ListRecord,
+  MediaTab,
   MovieRecord,
   SeriesRecord,
   ViewId,
@@ -27,21 +28,29 @@ interface AppContextValue {
   library: LibraryItem[];
   counts: ReturnType<typeof countByStatus>;
   tmdbKey: string | null;
+  anthropicKey: string | null;
+  anthropicModel: ClaudeModelId;
   settingsReady: boolean;
   currentView: ViewId;
-  catFilter: Category | 'all';
+  mediaTab: MediaTab;
+  genreFilter: string[];
   searchQuery: string;
   sidebarOpen: boolean;
   detail: DetailTarget | null;
   setView: (view: ViewId) => void;
-  setCatFilter: (cat: Category | 'all') => void;
+  setMediaTab: (tab: MediaTab) => void;
+  setGenreFilter: (genres: string[]) => void;
+  toggleGenreFilter: (name: string) => void;
   setSearchQuery: (query: string) => void;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openDetail: (kind: LibraryItem['kind'], id: string) => void;
   closeDetail: () => void;
   saveApiKey: (key: string) => Promise<void>;
+  saveAnthropicApiKey: (key: string) => Promise<void>;
+  saveAnthropicModel: (model: ClaudeModelId) => Promise<void>;
   promptApiKey: () => void;
+  promptAnthropicApiKey: () => void;
   reloadLibrary: () => Promise<void>;
   addFromTmdb: (tmdbId: number, type: 'tv' | 'movie') => Promise<void>;
   updateField: (
@@ -105,21 +114,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     library: libraryState.library,
     counts: libraryState.counts,
     tmdbKey: settings.tmdbKey,
+    anthropicKey: settings.anthropicKey,
+    anthropicModel: settings.anthropicModel,
     settingsReady: settings.ready,
     currentView: navigation.currentView,
-    catFilter: navigation.catFilter,
+    mediaTab: navigation.mediaTab,
+    genreFilter: navigation.genreFilter,
     searchQuery: navigation.searchQuery,
     sidebarOpen: navigation.sidebarOpen,
     detail: detailState.detail,
     setView: navigation.setView,
-    setCatFilter: navigation.setCatFilter,
+    setMediaTab: navigation.setMediaTab,
+    setGenreFilter: navigation.setGenreFilter,
+    toggleGenreFilter: navigation.toggleGenreFilter,
     setSearchQuery: navigation.setSearchQuery,
     toggleSidebar: navigation.toggleSidebar,
     closeSidebar: navigation.closeSidebar,
     openDetail: detailState.openDetail,
     closeDetail: detailState.closeDetail,
     saveApiKey: settings.saveApiKey,
+    saveAnthropicApiKey: settings.saveAnthropicApiKey,
+    saveAnthropicModel: settings.saveAnthropicModel,
     promptApiKey: settings.promptApiKey,
+    promptAnthropicApiKey: settings.promptAnthropicApiKey,
     reloadLibrary: libraryState.reloadLibrary,
     addFromTmdb: libraryState.addFromTmdb,
     updateField: libraryState.updateField,
@@ -186,24 +203,30 @@ export function useLibraryContext() {
 export function useNavigationContext() {
   const {
     currentView,
-    catFilter,
+    mediaTab,
+    genreFilter,
     searchQuery,
     sidebarOpen,
     contentScrollRef,
     setView,
-    setCatFilter,
+    setMediaTab,
+    setGenreFilter,
+    toggleGenreFilter,
     setSearchQuery,
     toggleSidebar,
     closeSidebar,
   } = useApp();
   return {
     currentView,
-    catFilter,
+    mediaTab,
+    genreFilter,
     searchQuery,
     sidebarOpen,
     contentScrollRef,
     setView,
-    setCatFilter,
+    setMediaTab,
+    setGenreFilter,
+    toggleGenreFilter,
     setSearchQuery,
     toggleSidebar,
     closeSidebar,
@@ -211,8 +234,30 @@ export function useNavigationContext() {
 }
 
 export function useTmdbContext() {
-  const { tmdbKey, settingsReady, saveApiKey, promptApiKey, addFromTmdb } = useApp();
-  return { tmdbKey, settingsReady, saveApiKey, promptApiKey, addFromTmdb };
+  const {
+    tmdbKey,
+    anthropicKey,
+    anthropicModel,
+    settingsReady,
+    saveApiKey,
+    saveAnthropicApiKey,
+    saveAnthropicModel,
+    promptApiKey,
+    promptAnthropicApiKey,
+    addFromTmdb,
+  } = useApp();
+  return {
+    tmdbKey,
+    anthropicKey,
+    anthropicModel,
+    settingsReady,
+    saveApiKey,
+    saveAnthropicApiKey,
+    saveAnthropicModel,
+    promptApiKey,
+    promptAnthropicApiKey,
+    addFromTmdb,
+  };
 }
 
 export function useDetailContext() {

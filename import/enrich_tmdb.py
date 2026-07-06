@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Recorre tu biblioteca ya importada en PocketBase y le suma poster, sinopsis
-y tmdb_id, matcheando por tvdb_id / imdb_id contra la API de TMDB
-(mucho más confiable que buscar por título).
+Recorre tu biblioteca ya importada en PocketBase y le suma poster, sinopsis,
+tmdb_id y géneros TMDB, matcheando por tvdb_id / imdb_id.
 
 Uso:
     python3 enrich_tmdb.py --pb-url https://tu-dominio.com --tmdb-key TU_API_KEY
@@ -15,13 +14,39 @@ import time
 import requests
 
 TMDB_FIND = "https://api.themoviedb.org/3/find/{ext_id}"
+TMDB_GENRE_TV = "https://api.themoviedb.org/3/genre/tv/list"
+TMDB_GENRE_MOVIE = "https://api.themoviedb.org/3/genre/movie/list"
+
+
+def load_genre_maps(tmdb_key):
+    params = {"api_key": tmdb_key, "language": "es-ES"}
+    tv = requests.get(TMDB_GENRE_TV, params=params, timeout=30)
+    movie = requests.get(TMDB_GENRE_MOVIE, params=params, timeout=30)
+    tv.raise_for_status()
+    movie.raise_for_status()
+    tv_map = {g["id"]: g["name"] for g in tv.json().get("genres", [])}
+    movie_map = {g["id"]: g["name"] for g in movie.json().get("genres", [])}
+    return tv_map, movie_map
+
+
+def genres_from_ids(genre_ids, media_type, tv_map, movie_map):
+    genre_map = tv_map if media_type == "tv" else movie_map
+    out = []
+    seen = set()
+    for gid in genre_ids or []:
+        name = genre_map.get(gid)
+        if not name or gid in seen:
+            continue
+        seen.add(gid)
+        out.append({"id": gid, "name": name})
+    return out
 
 
 def find_by_external_id(tmdb_key, ext_id, source, media_type_hint):
     if not ext_id:
         return None
     params = {"api_key": tmdb_key, "external_source": source}
-    r = requests.get(TMDB_FIND.format(ext_id=ext_id), params=params)
+    r = requests.get(TMDB_FIND.format(ext_id=ext_id), params=params, timeout=30)
     if r.status_code != 200:
         return None
     data = r.json()
@@ -30,12 +55,15 @@ def find_by_external_id(tmdb_key, ext_id, source, media_type_hint):
     return results[0] if results else None
 
 
-def enrich_collection(pb_url, tmdb_key, collection, media_type):
+def enrich_collection(pb_url, tmdb_key, collection, media_type, tv_map, movie_map):
     page = 1
     updated = 0
     while True:
-        r = requests.get(f"{pb_url}/api/collections/{collection}/records",
-                          params={"page": page, "perPage": 100})
+        r = requests.get(
+            f"{pb_url}/api/collections/{collection}/records",
+            params={"page": page, "perPage": 100},
+            timeout=30,
+        )
         if r.status_code != 200:
             print("Error listando", collection, r.text[:200])
             return
@@ -46,7 +74,7 @@ def enrich_collection(pb_url, tmdb_key, collection, media_type):
 
         for item in items:
             if item.get("tmdb_id"):
-                continue  # ya enriquecido
+                continue
 
             match = None
             if item.get("tvdb_id"):
@@ -60,13 +88,19 @@ def enrich_collection(pb_url, tmdb_key, collection, media_type):
                     "poster_path": match.get("poster_path") or "",
                     "overview": match.get("overview") or "",
                 }
-                # sugerencia de categoría para series, basada en géneros de TMDB
-                if media_type == "tv" and not item.get("category"):
-                    genre_ids = match.get("genre_ids", [])
-                    payload["category"] = "Comedia" if 35 in genre_ids else "Seria"
+                if not item.get("genres"):
+                    payload["genres"] = genres_from_ids(
+                        match.get("genre_ids", []),
+                        media_type,
+                        tv_map,
+                        movie_map,
+                    )
 
-                pr = requests.patch(f"{pb_url}/api/collections/{collection}/records/{item['id']}",
-                                     json=payload)
+                pr = requests.patch(
+                    f"{pb_url}/api/collections/{collection}/records/{item['id']}",
+                    json=payload,
+                    timeout=30,
+                )
                 if pr.status_code == 200:
                     updated += 1
                     print(f"  ✓ {item.get('title')}")
@@ -75,7 +109,7 @@ def enrich_collection(pb_url, tmdb_key, collection, media_type):
             else:
                 print(f"  · sin match TMDB: {item.get('title')}")
 
-            time.sleep(0.05)  # no saturar la API pública de TMDB
+            time.sleep(0.05)
 
         if page >= data.get("totalPages", 1):
             break
@@ -91,7 +125,10 @@ if __name__ == "__main__":
     args = p.parse_args()
     pb_url = args.pb_url.rstrip("/")
 
+    print("Cargando listas de géneros TMDB...")
+    tv_genres, movie_genres = load_genre_maps(args.tmdb_key)
+
     print("Enriqueciendo series...")
-    enrich_collection(pb_url, args.tmdb_key, "series", "tv")
+    enrich_collection(pb_url, args.tmdb_key, "series", "tv", tv_genres, movie_genres)
     print("Enriqueciendo películas...")
-    enrich_collection(pb_url, args.tmdb_key, "movies", "movie")
+    enrich_collection(pb_url, args.tmdb_key, "movies", "movie", tv_genres, movie_genres)

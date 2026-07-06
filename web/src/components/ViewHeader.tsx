@@ -32,11 +32,11 @@ export function ViewHeader() {
       </div>
     );
   }
-  if (currentView === 'recomendaciones') {
+  if (currentView === 'chat') {
     return (
       <div className="view-header">
-        <h2 className="section-title marquee">Recomendaciones IA</h2>
-        <p className="section-sub">Basadas en lo que ya viste y calificaste.</p>
+        <h2 className="section-title marquee">Chat IA</h2>
+        <p className="section-sub">Preguntá por recomendaciones según tu biblioteca y lo que te gusta.</p>
       </div>
     );
   }

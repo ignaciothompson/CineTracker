@@ -1,6 +1,7 @@
-import type { Category, LibraryItem, ViewId } from '../types';
+import type { LibraryItem, MediaTab, ViewId } from '../types';
+import { itemMatchesGenres } from './library';
 
-const LIBRARY_VIEWS = new Set<ViewId>(['viendo', 'pendientes', 'visto', 'todo']);
+const LIBRARY_VIEWS = new Set<ViewId>(['viendo', 'pendientes', 'visto', 'abandonadas', 'todo']);
 
 export function isLibraryView(view: ViewId): boolean {
   return LIBRARY_VIEWS.has(view);
@@ -9,12 +10,15 @@ export function isLibraryView(view: ViewId): boolean {
 export function filterLibraryItems(
   library: LibraryItem[],
   view: ViewId,
-  catFilter: Category | 'all',
+  mediaTab: MediaTab,
   searchQuery = '',
+  genreFilter: string[] = [],
 ) {
   let items = library;
   if (view !== 'todo') items = items.filter((l) => l.watch_status === view);
-  if (catFilter !== 'all') items = items.filter((l) => l.category === catFilter);
+  if (mediaTab === 'tv') items = items.filter((l) => l.kind === 'tv');
+  if (mediaTab === 'movie') items = items.filter((l) => l.kind === 'movie');
+  if (genreFilter.length) items = items.filter((l) => itemMatchesGenres(l, genreFilter));
 
   const q = searchQuery.trim().toLowerCase();
   if (q) {
