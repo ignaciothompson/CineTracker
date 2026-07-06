@@ -28,7 +28,6 @@ interface AppContextValue {
   library: LibraryItem[];
   counts: ReturnType<typeof countByStatus>;
   tmdbKey: string | null;
-  anthropicKey: string | null;
   anthropicReady: boolean;
   anthropicModel: ClaudeModelId;
   settingsReady: boolean;
@@ -48,10 +47,8 @@ interface AppContextValue {
   openDetail: (kind: LibraryItem['kind'], id: string) => void;
   closeDetail: () => void;
   saveApiKey: (key: string) => Promise<void>;
-  saveAnthropicApiKey: (key: string) => Promise<void>;
   saveAnthropicModel: (model: ClaudeModelId) => Promise<void>;
   promptApiKey: () => void;
-  promptAnthropicApiKey: () => void;
   reloadLibrary: () => Promise<void>;
   addFromTmdb: (tmdbId: number, type: 'tv' | 'movie') => Promise<void>;
   updateField: (
@@ -115,7 +112,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     library: libraryState.library,
     counts: libraryState.counts,
     tmdbKey: settings.tmdbKey,
-    anthropicKey: settings.anthropicKey,
     anthropicReady: settings.anthropicReady,
     anthropicModel: settings.anthropicModel,
     settingsReady: settings.ready,
@@ -135,10 +131,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     openDetail: detailState.openDetail,
     closeDetail: detailState.closeDetail,
     saveApiKey: settings.saveApiKey,
-    saveAnthropicApiKey: settings.saveAnthropicApiKey,
     saveAnthropicModel: settings.saveAnthropicModel,
     promptApiKey: settings.promptApiKey,
-    promptAnthropicApiKey: settings.promptAnthropicApiKey,
     reloadLibrary: libraryState.reloadLibrary,
     addFromTmdb: libraryState.addFromTmdb,
     updateField: libraryState.updateField,
@@ -238,28 +232,22 @@ export function useNavigationContext() {
 export function useTmdbContext() {
   const {
     tmdbKey,
-    anthropicKey,
     anthropicReady,
     anthropicModel,
     settingsReady,
     saveApiKey,
-    saveAnthropicApiKey,
     saveAnthropicModel,
     promptApiKey,
-    promptAnthropicApiKey,
     addFromTmdb,
   } = useApp();
   return {
     tmdbKey,
-    anthropicKey,
     anthropicReady,
     anthropicModel,
     settingsReady,
     saveApiKey,
-    saveAnthropicApiKey,
     saveAnthropicModel,
     promptApiKey,
-    promptAnthropicApiKey,
     addFromTmdb,
   };
 }

@@ -72,12 +72,12 @@ npm test
    ```
    ANTHROPIC_API_KEY=sk-ant-...
    ```
-   (la conseguís en console.anthropic.com — es opcional, solo la necesitás para el panel de "Recomendaciones IA")
+   (console.anthropic.com — **solo variable de entorno**, no se guarda en la base de datos)
 4. Asigná un dominio al servicio (Dokploy te da HTTPS automático con Let's Encrypt).
 5. Deploy. La primera vez, PocketBase corre las migraciones solo y crea las colecciones `series`, `movies`, `lists`, `settings`.
 6. Entrá a `https://tu-dominio.com/_/` para crear tu superusuario admin (es distinto del acceso a la app, es solo para vos administrar la base de datos si hace falta).
 
-**Nota de seguridad:** las colecciones quedan con reglas abiertas (sin login) a propósito, porque pediste acceso directo sin auth. Esto significa que cualquiera con la URL puede leer y escribir tu biblioteca. Si vas a exponer el dominio públicamente (no solo en tu red local/VPN), te conviene ponerle una capa de auth básica delante — Dokploy soporta esto vía Traefik middlewares, o simplemente no publiques el dominio y accedé por VPN/Tailscale.
+**Nota de seguridad:** las colecciones quedan con reglas abiertas (sin login) a propósito, porque pediste acceso directo sin auth. Esto significa que cualquiera con la URL puede leer y escribir tu biblioteca. La key de Claude **no** va en `settings` — solo como `ANTHROPIC_API_KEY` en el servidor. Si en el futuro querés que cada usuario use su propia key de Anthropic, hace falta autenticación real primero.
 
 ## 2. Importar tus datos de TV Time
 
@@ -124,19 +124,25 @@ cd import
 python -m unittest test_import_data.py
 ```
 
-## 3. Sumar posters y sinopsis (opcional pero recomendado)
+## 3. Sumar posters, sinopsis y géneros (recomendado)
 
-TV Time no exporta imágenes, así que hay un segundo paso que matchea tus títulos
-contra TMDB usando el tvdb_id / imdb_id que ya tenías (más confiable que buscar por
-nombre):
+TV Time no exporta imágenes ni géneros TMDB. El script `enrich_tmdb.py` recorre **toda** la biblioteca:
+
+- Sin `tmdb_id`: matchea por `tvdb_id` / `imdb_id`
+- Con `tmdb_id` pero sin `genres`: consulta `/tv/{id}` o `/movie/{id}` y guarda el array `{id, name}`
 
 ```bash
-python3 enrich_tmdb.py --pb-url https://tu-dominio.com --tmdb-key TU_API_KEY_DE_TMDB
+cd import
+pip install -r requirements.txt
+
+python3 enrich_tmdb.py \
+  --pb-url https://tu-dominio.com \
+  --tmdb-key TU_API_KEY_DE_TMDB
 ```
 
-De paso, para las series sin categoría asignada, sugiere "Comedia" si TMDB la
-tiene tageada como sitcom, o "Seria" en cualquier otro caso — después corregí
-a mano lo que no haya adivinado bien desde la app.
+También podés enriquecer desde la app (**Importar TV Time → Enriquecer con TMDB**).
+
+Más detalle: [import/README.md](import/README.md).
 
 ## 4. Usar la app
 

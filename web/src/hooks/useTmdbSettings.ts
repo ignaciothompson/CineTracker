@@ -4,7 +4,6 @@ import { pb } from '../lib/pocketbase';
 
 export function useTmdbSettings() {
   const [tmdbKey, setTmdbKey] = useState<string | null>(null);
-  const [anthropicKey, setAnthropicKey] = useState<string | null>(null);
   const [anthropicConfigured, setAnthropicConfigured] = useState(false);
   const [anthropicModel, setAnthropicModel] = useState<ClaudeModelId>(DEFAULT_CLAUDE_MODEL);
   const [settingsRecordId, setSettingsRecordId] = useState<string | null>(null);
@@ -16,7 +15,6 @@ export function useTmdbSettings() {
       if (recs.length) {
         setSettingsRecordId(recs[0].id);
         setTmdbKey(recs[0].tmdb_api_key || null);
-        setAnthropicKey(recs[0].anthropic_api_key || null);
         setAnthropicModel(normalizeClaudeModel(recs[0].anthropic_model));
       }
     } catch {
@@ -41,13 +39,8 @@ export function useTmdbSettings() {
   }, [loadSettings]);
 
   const saveSettings = useCallback(
-    async (patch: {
-      tmdb_api_key?: string;
-      anthropic_api_key?: string;
-      anthropic_model?: string;
-    }) => {
+    async (patch: { tmdb_api_key?: string; anthropic_model?: string }) => {
       if ('tmdb_api_key' in patch) setTmdbKey(patch.tmdb_api_key ?? null);
-      if ('anthropic_api_key' in patch) setAnthropicKey(patch.anthropic_api_key ?? null);
       if ('anthropic_model' in patch) {
         setAnthropicModel(normalizeClaudeModel(patch.anthropic_model));
       }
@@ -60,16 +53,10 @@ export function useTmdbSettings() {
     },
     [settingsRecordId],
   );
+
   const saveApiKey = useCallback(
     async (val: string) => {
       await saveSettings({ tmdb_api_key: val });
-    },
-    [saveSettings],
-  );
-
-  const saveAnthropicApiKey = useCallback(
-    async (val: string) => {
-      await saveSettings({ anthropic_api_key: val });
     },
     [saveSettings],
   );
@@ -90,26 +77,13 @@ export function useTmdbSettings() {
     void saveApiKey(val.trim());
   }, [saveApiKey, tmdbKey]);
 
-  const promptAnthropicApiKey = useCallback(() => {
-    const val = prompt(
-      'Pegá tu API key de Anthropic (Claude). Se guarda en tu base de datos y se usa para el chat con IA.',
-      anthropicKey || '',
-    );
-    if (val === null) return;
-    void saveAnthropicApiKey(val.trim());
-  }, [saveAnthropicApiKey, anthropicKey]);
-
   return {
     tmdbKey,
-    anthropicKey,
-    anthropicConfigured,
-    anthropicReady: !!(anthropicKey || anthropicConfigured),
+    anthropicReady: anthropicConfigured,
     anthropicModel,
     ready,
     saveApiKey,
-    saveAnthropicApiKey,
     saveAnthropicModel,
     promptApiKey,
-    promptAnthropicApiKey,
   };
 }

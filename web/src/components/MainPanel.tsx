@@ -26,8 +26,12 @@ export function MainPanel() {
         </div>
         <div className="topbar">
           <TmdbSearch />
-          <MediaTabs hidden={!showFilters} />
-          <GenreFilterChips hidden={!showFilters} />
+          {showFilters ? (
+            <div className="topbar-filters">
+              <MediaTabs />
+              <GenreFilterChips hidden={false} />
+            </div>
+          ) : null}
         </div>
         <ViewHeader />
       </div>

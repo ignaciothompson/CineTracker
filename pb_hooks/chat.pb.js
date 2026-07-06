@@ -21,12 +21,7 @@ function getSettingsRecord(app) {
   return null;
 }
 
-function getAnthropicKey(app) {
-  const rec = getSettingsRecord(app);
-  if (rec) {
-    const fromDb = rec.get("anthropic_api_key");
-    if (fromDb) return fromDb;
-  }
+function getAnthropicKey() {
   return $os.getenv("ANTHROPIC_API_KEY") || "";
 }
 
@@ -202,14 +197,14 @@ function formatGenreList(genres) {
 }
 
 routerAdd("GET", "/api/chat/status", (e) => {
-  return e.json(200, { configured: !!getAnthropicKey(e.app) });
+  return e.json(200, { configured: !!getAnthropicKey() });
 });
 
 routerAdd("POST", "/api/chat", (e) => {
-  const apiKey = getAnthropicKey(e.app);
+  const apiKey = getAnthropicKey();
   if (!apiKey) {
     return e.json(500, {
-      error: "Falta API key de Claude. Configurala en el sidebar o como ANTHROPIC_API_KEY.",
+      error: "Falta ANTHROPIC_API_KEY en el servidor (variable de entorno).",
     });
   }
 

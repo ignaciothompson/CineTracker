@@ -50,6 +50,8 @@ export function TicketCard({ item, onOpen, onMarkWatched }: TicketCardProps) {
         className="poster"
         src={tmdbImg(item.poster_path)}
         alt={item.title}
+        loading="lazy"
+        decoding="async"
         onError={(e) => { (e.target as HTMLImageElement).style.background = 'var(--surface-raised)'; }}
       />
       <div className="body">

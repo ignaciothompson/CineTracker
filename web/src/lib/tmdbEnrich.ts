@@ -1,5 +1,6 @@
 import { pb } from './pocketbase';
-import { genreIdsToGenres, normalizeGenresList } from './tmdbGenres';
+import { tmdbDetails } from './tmdb';
+import { genreIdsToGenres, genresFromTmdbDetails, normalizeGenresList } from './tmdbGenres';
 import type { TmdbGenre } from '../types';
 
 const TMDB_FIND = 'https://api.themoviedb.org/3/find';
@@ -18,6 +19,8 @@ export interface EnrichableRecord {
   tmdb_id?: number | null;
   tvdb_id?: number | null;
   imdb_id?: string | null;
+  poster_path?: string | null;
+  overview?: string;
   genres?: TmdbGenre[] | null;
 }
 
@@ -35,6 +38,11 @@ export interface EnrichProgress {
   total: number;
 }
 
+export function needsEnrich(item: EnrichableRecord): boolean {
+  if (!item.tmdb_id) return true;
+  return !normalizeGenresList(item.genres).length;
+}
+
 export function buildEnrichPayload(
   match: TmdbFindMatch,
   mediaType: 'tv' | 'movie',
@@ -47,6 +55,23 @@ export function buildEnrichPayload(
   };
   if (!normalizeGenresList(existingGenres).length) {
     payload.genres = genreIdsToGenres(match.genre_ids, mediaType);
+  }
+  return payload;
+}
+
+export function buildGenreBackfillPayload(
+  details: { genres?: { id: number; name: string }[]; poster_path?: string; overview?: string },
+  item: EnrichableRecord,
+): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (!normalizeGenresList(item.genres).length) {
+    payload.genres = genresFromTmdbDetails(details.genres);
+  }
+  if (!item.poster_path && details.poster_path) {
+    payload.poster_path = details.poster_path;
+  }
+  if (!item.overview && details.overview) {
+    payload.overview = details.overview;
   }
   return payload;
 }
@@ -101,7 +126,7 @@ export async function enrichCollection(
     errors: [],
   };
 
-  const pending = items.filter((item) => !item.tmdb_id);
+  const pending = items.filter(needsEnrich);
   const label = mediaType === 'tv' ? 'Series TMDB' : 'Películas TMDB';
 
   for (let i = 0; i < pending.length; i++) {
@@ -109,13 +134,24 @@ export async function enrichCollection(
     onProgress?.({ label, current: i + 1, total: pending.length });
 
     try {
-      const match = await resolveMatch(apiKey, item, mediaType);
-      if (!match) {
-        stats.noMatch += 1;
+      if (item.tmdb_id) {
+        const details = await tmdbDetails(apiKey, item.tmdb_id, mediaType);
+        const payload = buildGenreBackfillPayload(details, item);
+        if (!Object.keys(payload).length) {
+          stats.skipped += 1;
+        } else {
+          await pb.collection(collection).update(item.id, payload);
+          stats.updated += 1;
+        }
       } else {
-        const payload = buildEnrichPayload(match, mediaType, item.genres);
-        await pb.collection(collection).update(item.id, payload);
-        stats.updated += 1;
+        const match = await resolveMatch(apiKey, item, mediaType);
+        if (!match) {
+          stats.noMatch += 1;
+        } else {
+          const payload = buildEnrichPayload(match, mediaType, item.genres);
+          await pb.collection(collection).update(item.id, payload);
+          stats.updated += 1;
+        }
       }
     } catch (err) {
       stats.failed += 1;
@@ -127,7 +163,7 @@ export async function enrichCollection(
     if (i < pending.length - 1) await sleep(ENRICH_DELAY_MS);
   }
 
-  stats.skipped = items.length - pending.length;
+  stats.skipped += items.length - pending.length;
   return stats;
 }
 
@@ -153,9 +189,11 @@ export async function enrichLibrary(
 }
 
 export function countPendingEnrich(series: EnrichableRecord[], movies: EnrichableRecord[]) {
+  const pendingSeries = series.filter(needsEnrich);
+  const pendingMovies = movies.filter(needsEnrich);
   return {
-    series: series.filter((s) => !s.tmdb_id).length,
-    movies: movies.filter((m) => !m.tmdb_id).length,
-    total: [...series, ...movies].filter((i) => !i.tmdb_id).length,
+    series: pendingSeries.length,
+    movies: pendingMovies.length,
+    total: pendingSeries.length + pendingMovies.length,
   };
 }

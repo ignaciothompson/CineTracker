@@ -22,7 +22,7 @@ type Phase = 'setup' | 'result' | 'save' | 'history';
 
 export function ChatView() {
   const { library } = useLibraryContext();
-  const { anthropicReady, anthropicModel, saveAnthropicModel, promptAnthropicApiKey } = useTmdbContext();
+  const { anthropicReady, anthropicModel, saveAnthropicModel } = useTmdbContext();
 
   const [phase, setPhase] = useState<Phase>('setup');
   const [model, setModel] = useState<ClaudeModelId>(anthropicModel);
@@ -104,7 +104,7 @@ export function ChatView() {
 
   const runRecommend = async () => {
     if (!anthropicReady) {
-      setError('Configurá Claude API key en el sidebar o ANTHROPIC_API_KEY en el servidor.');
+      setError('Chat IA no disponible: falta ANTHROPIC_API_KEY en el servidor.');
       return;
     }
     setLoading(true);
@@ -182,12 +182,6 @@ export function ChatView() {
           </select>
         </label>
       </div>
-
-      {!anthropicReady ? (
-        <button type="button" className="ghost-btn rec-setup-btn" onClick={promptAnthropicApiKey}>
-          Configurar Claude API key
-        </button>
-      ) : null}
 
       {phase === 'history' ? (
         <div className="rec-history">

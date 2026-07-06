@@ -53,13 +53,14 @@ export function EnrichPanel({ disabled = false }: EnrichPanelProps) {
       <div className="enrich-panel-head">
         <h3 className="import-card-title">Enriquecer con TMDB</h3>
         <span className="enrich-badge">
-          {pending.total} sin poster
+          {pending.total} pendientes
         </span>
       </div>
 
       <p className="import-card-text">
-        Matchea por <code>tvdb_id</code> / <code>imdb_id</code> y agrega poster, sinopsis y{' '}
-        <code>tmdb_id</code>. Los que ya tienen TMDB se saltan.
+        Completa poster, sinopsis, <code>tmdb_id</code> y géneros TMDB en toda la biblioteca.
+        También rellena géneros en títulos que ya tienen TMDB pero quedaron sin{' '}
+        <code>genres</code>.
       </p>
 
       {!tmdbKey ? (

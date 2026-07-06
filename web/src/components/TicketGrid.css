@@ -1,7 +1,14 @@
+.grid-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-xl);
+  padding-bottom: var(--space-sm);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-  gap: 16px;
+  gap: var(--space-lg);
 }
 
 @media (min-width: 1400px) {

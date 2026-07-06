@@ -1,8 +1,7 @@
 .filters {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .chip {
@@ -10,7 +9,7 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 12px;
-  padding: 8px 14px;
+  padding: var(--space-sm) 14px;
   border-radius: 20px;
   cursor: pointer;
 }
@@ -23,16 +22,23 @@
 
 .genre-filters {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
-  margin-top: 8px;
+  justify-content: flex-end;
+  max-width: 100%;
+}
+
+.genre-more-btn {
+  border-style: dashed;
+  color: var(--text-muted);
 }
 
 @media (max-width: 1023px) {
   .genre-filters {
     overflow-x: auto;
     flex-wrap: nowrap;
-    padding-bottom: 4px;
+    justify-content: flex-start;
+    padding-bottom: var(--space-xs);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -44,7 +50,7 @@
   .filters {
     overflow-x: auto;
     flex-wrap: nowrap;
-    padding-bottom: 4px;
+    padding-bottom: var(--space-xs);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }

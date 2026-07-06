@@ -79,7 +79,6 @@ export interface ListRecord {
 export interface SettingsRecord {
   id: string;
   tmdb_api_key?: string;
-  anthropic_api_key?: string;
   anthropic_model?: string;
 }
 

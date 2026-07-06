@@ -1,8 +1,8 @@
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
 }
 
 .stat-card {
@@ -193,7 +193,7 @@
 .chat-setup {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-md);
   white-space: normal;
 }
 
@@ -208,7 +208,7 @@
 .chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .chip-row .chip {

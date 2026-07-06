@@ -53,16 +53,16 @@ export function StatsView() {
         <div className="stat-card"><div className="num">{abandonadas}</div><div className="lbl">Abandonadas ({abandonadasPct}% de arrancados)</div></div>
         <div className="stat-card"><div className="num">{favoritos}</div><div className="lbl">Favoritos</div></div>
       </div>
-      <h2 className="section-title marquee" style={{ fontSize: 18, marginBottom: 16 }}>Distribución</h2>
+      <h3 className="section-subsection marquee">Distribución</h3>
       {bar('Series', seriesCount, total, 'var(--seria)')}
       {bar('Películas', moviesCount, total, 'var(--stub)')}
       {genreTop.length ? (
         <>
-          <h2 className="section-title marquee" style={{ fontSize: 18, margin: '24px 0 16px' }}>Géneros top</h2>
+          <h3 className="section-subsection marquee">Géneros top</h3>
           {genreTop.map(([name, count]) => bar(name, count, maxGenre, 'var(--comedia)', `genre-${name}`))}
         </>
       ) : null}
-      <h2 className="section-title marquee" style={{ fontSize: 18, margin: '24px 0 16px' }}>Ratings</h2>
+      <h3 className="section-subsection marquee">Ratings</h3>
       {ratingCounts.map((count, i) =>
         bar(String(i + 1), count, maxRatingCount, 'var(--progress)', `rating-${i + 1}`),
       )}
