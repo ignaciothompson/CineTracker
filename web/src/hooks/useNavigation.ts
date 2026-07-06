@@ -5,6 +5,7 @@ export function useNavigation() {
   const [currentView, setCurrentView] = useState<ViewId>('viendo');
   const [mediaTab, setMediaTabState] = useState<MediaTab>('todo');
   const [genreFilter, setGenreFilterState] = useState<string[]>([]);
+  const [searchQuery, setSearchQueryState] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
