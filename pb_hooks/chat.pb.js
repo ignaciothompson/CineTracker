@@ -21,15 +21,11 @@ function getSettingsRecord(app) {
   return null;
 }
 
-function getAnthropicKey() {
-  var key = "";
-  try {
-    key = $os.getenv("ANTHROPIC_API_KEY") || "";
-  } catch (err) {}
-  if (!key && typeof process !== "undefined" && process.env && process.env.ANTHROPIC_API_KEY) {
-    key = process.env.ANTHROPIC_API_KEY;
-  }
-  key = String(key).trim();
+var DEFAULT_MODEL = "claude-sonnet-5";
+var ANTHROPIC_KEY_FILE = "/pb/pb_data/.anthropic_api_key";
+
+function normalizeAnthropicKey(raw) {
+  var key = String(raw || "").trim();
   if (
     (key.charAt(0) === '"' && key.charAt(key.length - 1) === '"') ||
     (key.charAt(0) === "'" && key.charAt(key.length - 1) === "'")
@@ -37,6 +33,34 @@ function getAnthropicKey() {
     key = key.slice(1, -1).trim();
   }
   return key;
+}
+
+function readAnthropicKeyFile() {
+  try {
+    var raw = $os.readFile(ANTHROPIC_KEY_FILE);
+    if (!raw) return "";
+    if (typeof raw === "string") return normalizeAnthropicKey(raw);
+    if (typeof toString === "function") return normalizeAnthropicKey(toString(raw));
+    return normalizeAnthropicKey(String.fromCharCode.apply(null, raw));
+  } catch (err) {
+    return "";
+  }
+}
+
+function getAnthropicKey() {
+  var key = "";
+
+  if (typeof process !== "undefined" && process.env && process.env.ANTHROPIC_API_KEY) {
+    key = normalizeAnthropicKey(process.env.ANTHROPIC_API_KEY);
+    if (key) return key;
+  }
+
+  try {
+    key = normalizeAnthropicKey($os.getenv("ANTHROPIC_API_KEY") || "");
+    if (key) return key;
+  } catch (err) {}
+
+  return readAnthropicKeyFile();
 }
 
 function getAnthropicModel(app, requested) {
@@ -211,7 +235,19 @@ function formatGenreList(genres) {
 }
 
 routerAdd("GET", "/api/chat/status", (e) => {
-  return e.json(200, { configured: !!getAnthropicKey() });
+  var fileKey = readAnthropicKeyFile();
+  var envKey = "";
+  try {
+    envKey = normalizeAnthropicKey($os.getenv("ANTHROPIC_API_KEY") || "");
+  } catch (err) {}
+  if (!envKey && typeof process !== "undefined" && process.env && process.env.ANTHROPIC_API_KEY) {
+    envKey = normalizeAnthropicKey(process.env.ANTHROPIC_API_KEY);
+  }
+  var key = envKey || fileKey;
+  return e.json(200, {
+    configured: !!key,
+    source: envKey ? "env" : fileKey ? "file" : "none",
+  });
 });
 
 routerAdd("POST", "/api/chat", (e) => {

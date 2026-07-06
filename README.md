@@ -74,7 +74,12 @@ npm test
    ```
    Opcional: `ANTHROPIC_MODEL=claude-sonnet-5`
 
-   Verificá después del deploy: `GET https://tu-dominio.com/api/chat/status` → `{"configured":true}`.
+   Verificá después del deploy: `GET https://tu-dominio.com/api/chat/status` → `{"configured":true,"source":"env"}`.
+
+   **Hotfix sin rebuild** (si `echo $ANTHROPIC_API_KEY` funciona pero el chat no):
+   ```bash
+   printf '%s' "$ANTHROPIC_API_KEY" > /pb/pb_data/.anthropic_api_key && chmod 600 /pb/pb_data/.anthropic_api_key
+   ```
 4. Asigná un dominio al servicio (Dokploy te da HTTPS automático con Let's Encrypt).
 5. Deploy. La primera vez, PocketBase corre las migraciones solo y crea las colecciones `series`, `movies`, `lists`, `settings`.
 6. Entrá a `https://tu-dominio.com/_/` para crear tu superusuario admin (es distinto del acceso a la app, es solo para vos administrar la base de datos si hace falta).

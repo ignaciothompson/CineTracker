@@ -17,8 +17,10 @@ RUN unzip /tmp/pb.zip -d /pb/ && rm /tmp/pb.zip
 
 COPY pb_migrations /pb/pb_migrations
 COPY pb_hooks /pb/pb_hooks
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 COPY --from=frontend-build /build/dist /pb/pb_public
 
 EXPOSE 8090
 
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb/pb_data"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

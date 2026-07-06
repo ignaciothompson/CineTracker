@@ -103,10 +103,6 @@ export function ChatView() {
   };
 
   const runRecommend = async () => {
-    if (!anthropicReady) {
-      setError('Chat IA no disponible: falta ANTHROPIC_API_KEY en el servidor.');
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
@@ -182,6 +178,12 @@ export function ChatView() {
           </select>
         </label>
       </div>
+
+      {!anthropicReady ? (
+        <p className="chat-error chat-warn">
+          El servidor no reporta Claude configurado. Si acabás de setear la key, redeployá o reiniciá el contenedor.
+        </p>
+      ) : null}
 
       {phase === 'history' ? (
         <div className="rec-history">
