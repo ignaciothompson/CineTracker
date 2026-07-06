@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useLibraryContext, useTmdbContext } from '../context/AppContext';
+import { useLibraryContext, useTmdbContext } from '../../context/AppContext';
 import {
   countPendingEnrich,
   enrichLibrary,
